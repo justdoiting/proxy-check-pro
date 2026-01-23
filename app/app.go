@@ -142,9 +142,11 @@ func (app *App) Initialize() error {
 	// 每周日 0 点自动更新 GeoLite2 数据库
 	weeklyCron := cron.New()
 	_, err := weeklyCron.AddFunc("0 12 * * 5", func() {
-		slog.Info("更新 GeoLite2 数据库...")
-		if err := assets.UpdateGeoLite2DB(); err != nil {
-			slog.Error(fmt.Sprintf("更新 GeoLite2 数据库失败: %v", err))
+		if !app.checking.Load() {
+			slog.Info("更新 GeoLite2 数据库...")
+			if err := assets.UpdateGeoLite2DB(); err != nil {
+				slog.Error(fmt.Sprintf("更新 GeoLite2 数据库失败: %v", err))
+			}
 		}
 	})
 	if err != nil {
