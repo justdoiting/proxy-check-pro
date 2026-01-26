@@ -146,7 +146,14 @@ func ParseProxyLinksAndConvert(links []string, subURL string) []ProxyNode {
 			finalNodes = append(finalNodes, ToProxyNodes(nodes)...)
 		} else {
 			slog.Debug("转换失败", "错误", err)
-			// TODO: 有些格式V2ray不支持,应直接传输
+			// TODO: 有些格式V2ray未被mihomo格式转换支持，使用自定义转换
+			if nodes, err := ConvertsV2RayExtra(data); err == nil {
+				slog.Debug("使用自定义转换v2ray成功", "数量", len(nodes))
+				finalNodes = append(finalNodes, ToProxyNodes(nodes)...)
+			} else {
+				slog.Debug("转换失败", "错误", err)
+			}
+
 		}
 	}
 
@@ -1261,7 +1268,7 @@ func ParseYamlFlowList(data []byte) []ProxyNode {
 					nodes = append(nodes, ProxyNode(m))
 				}
 			}
-		} 
+		}
 		// else {
 		// 	// TODO: 如果标准解析失败（例如引号嵌套错误），尝试简单的正则提取修复
 		// }

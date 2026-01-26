@@ -352,7 +352,7 @@ func parseSubscriptionData(data []byte, subURL string) ([]ProxyNode, error) {
 
 	// 尝试 Base64/V2Ray 标准转换
 	if nodes, err := convert.ConvertsV2Ray(data); err == nil && len(nodes) > 0 {
-		slog.Debug("解析成功", "订阅", subURL, "格式", "Base64/V2Ray", "数量", len(nodes))
+		slog.Info("解析成功", "订阅", subURL, "格式", "Base64/V2Ray", "数量", len(nodes))
 		return ToProxyNodes(nodes), nil
 	}
 
