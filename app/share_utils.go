@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sinspired/subs-check-pro/config"
+	"github.com/sinspired/subs-check-pro/save/method"
 )
 
 // FileEntry 表示目录中的单个文件条目
@@ -257,10 +258,22 @@ func (app *App) handleFilesIndex(c *gin.Context) {
 		Route string
 		Name  string
 	}
+
+	saver, err := method.NewLocalSaver()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 只保留磁盘上实际存在的文件
 	entries := make([]StaticFileEntry, 0, len(publicStaticFileList))
 	for _, f := range publicStaticFileList {
-		entries = append(entries, StaticFileEntry{Route: f.Route, Name: f.File})
+		absPath := filepath.Join(saver.OutputPath, f.File)
+		if _, err := os.Stat(absPath); err == nil {
+			entries = append(entries, StaticFileEntry{Route: f.Route, Name: f.File})
+		}
 	}
+
 	c.HTML(http.StatusOK, "files.html", gin.H{
 		"HasPassword": config.GlobalConfig.SharePassword != "",
 		"PublicFiles": entries,
