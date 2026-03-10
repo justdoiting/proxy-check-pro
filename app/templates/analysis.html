@@ -31,16 +31,16 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px 16px;
+            padding: 0px 16px;
             min-height: 100vh;
             gap: 16px;
         }
 
         .login-card {
             width: 100%;
-            max-width: 400px;
+            max-width: 320px;
             border-radius: 16px;
-            padding: 42px 28px 12px;
+            padding: 30px 20px 12px;
             box-shadow: var(--glass-shadow);
             animation: fadeUp 0.3s ease-out;
             overflow: hidden;
@@ -1145,12 +1145,12 @@
 
         .map-overlay-legend {
             position: absolute;
-            top: 8px;
+            bottom: 8px;
             right: 10px;
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            max-width: 160px;
+            max-width: 400px;
             justify-content: flex-end;
             pointer-events: none;
         }
@@ -1183,6 +1183,12 @@
             font-size: 9px;
             color: rgba(255, 255, 255, 0.35);
             pointer-events: none;
+        }
+
+        @media (max-width: 720px) {
+            .map-origin-hint {
+                display: none;
+            }
         }
 
         /* ── 协议分析 ── */
