@@ -131,7 +131,7 @@ const SCHEMA = [
       {
         title: '检测计划',
         fields: [
-          { key: 'cron-expression', label: 'Cron 表达式', type: 'text', fullWidth: true, placeholder: '0 4,16 * * *', hint: '优先级高于检测间隔；推荐凌晨 4 点和 16 点执行' },
+          { key: 'cron-expression', label: 'Cron 表达式', type: 'cron', fullWidth: true, placeholder: '0 4,16 * * *', hint: '优先级高于检测间隔；推荐凌晨 4 点和 16 点执行' },
           { key: 'check-interval', label: '检测间隔 (分钟)', type: 'number', min: 1, placeholder: '720', hint: 'Cron 为空时生效；建议 720–1440' },
           { key: 'print-progress', label: '终端显示进度', type: 'toggle' },
           {
@@ -166,7 +166,7 @@ const SCHEMA = [
           {
             key: 'system-proxy', label: '系统代理', type: 'text', fullWidth: true,
             placeholder: 'http://127.0.0.1:10808',
-            hint: '用于拉取订阅和推送通知；direct = 强制直连不使用代理；留空则自动检测；修改需重启',
+            hint: '用于拉取订阅和推送通知；direct = 强制直连不使用代理；留空则自动检测。',
           },
           {
             key: 'github-proxy', label: 'GitHub 代理', type: 'text', fullWidth: true,
@@ -287,7 +287,7 @@ const SCHEMA = [
           { key: 'update', label: '自动更新', type: 'toggle', hint: '关闭时仅提醒新版本' },
           { key: 'update-on-startup', label: '启动时检查更新', type: 'toggle' },
           { key: 'prerelease', label: '使用预发布版本', type: 'toggle', hint: '包含 beta / rc 版本' },
-          { key: 'cron-check-update', label: '检查更新 Cron', type: 'text', fullWidth: true, placeholder: '0 9,21 * * *' },
+          { key: 'cron-check-update', label: '检查更新 Cron', type: 'cron', fullWidth: true, placeholder: '0 9,21 * * *' },
           { key: 'update-timeout', label: '下载超时 (分钟)', type: 'number', min: 1, placeholder: '2' },
         ],
       },
@@ -297,8 +297,8 @@ const SCHEMA = [
           { key: 'sub-store-port', label: '监听端口', type: 'text', placeholder: ':8299' },
           { key: 'sub-store-path', label: '访问路径', type: 'text', placeholder: '/sub-store-path', hint: '建议设置以避免泄露；留空自动生成随机路径' },
           { key: 'mihomo-overwrite-url', label: 'Mihomo 覆写 URL', type: 'text', fullWidth: true, placeholder: 'http://127.0.0.1:8199/Sinspired_Rules_CDN.yaml' },
-          { key: 'sub-store-sync-cron', label: '同步 Gist Cron', type: 'text', fullWidth: true, placeholder: '55 5-23/2 * * *' },
-          { key: 'sub-store-produce-cron', label: '更新订阅 Cron', type: 'text', fullWidth: true, placeholder: '0 */2 * * *,sub,sub' },
+          { key: 'sub-store-sync-cron', label: '同步 Gist Cron', type: 'cron', fullWidth: true, placeholder: '55 5-23/2 * * *' },
+          { key: 'sub-store-produce-cron', label: '更新订阅 Cron', type: 'cron', fullWidth: true, placeholder: '0 */2 * * *,sub,sub' },
           { key: 'sub-store-push-service', label: 'Push 推送服务', type: 'text', placeholder: 'https://push.example.com' },
         ],
       },
@@ -370,6 +370,26 @@ const SPECIAL_INPUT_VALUES = {
     { value: 'direct', label: '直连', hint: '强制直连，不使用任何系统代理' },
   ],
 };
+
+/* ═══════════════════════════ Cron 段元数据 ═══════════════════════════ */
+const _CRON_SEGMENTS = [
+  { label: '分钟', title: '分钟 (0–59)' },
+  { label: '小时', title: '小时 (0–23)' },
+  { label: '日期', title: '日期 (1–31)' },
+  { label: '月份', title: '月份 (1–12)' },
+  { label: '星期', title: '星期 (0–7，0=周日)' },
+];
+
+
+/* ═══════════════════════════ Cron 值解析 ═══════════════════════════ */
+function _parseCronValue(v) {
+  const raw       = (v ?? '').trim();
+  const commented = raw.startsWith('#');
+  const expr      = commented ? raw.replace(/^#\s*/, '').trim() : raw;
+  const parts     = expr ? expr.split(/\s+/) : [];
+  const valid     = parts.length === 5 && parts.every(p => p.length > 0 && /^[0-9*,\-/]+$/.test(p));
+  return { raw, commented, expr, parts, valid };
+}
 
 
 /* ═══════════════════════════ 模块级共享状态 ═══════════════════════════ */
@@ -652,7 +672,108 @@ function mkUrlList(field, values) {
   list.forEach(v => addRow(v));
   return wrap;
 }
+/* ═══════════════════════════════════════════════════════════════
+   Cron 高亮输入控件  mkCronInput
+   ───────────────────────────────────────────────────────────────
+   结构：
+     .cfg-cron-wrap
+       .cfg-cron-display     ← 着色展示层（非编辑态可见）
+       .cfg-cron-labels-row  ← 段标签行（分钟/小时/日期/月份/星期）
+       input.cfg-cron-input  ← 真实 input（编辑态可见，display:none 时 DOM 仍可查）
 
+   · 点击 display / Tab → 进入编辑模式（input 出现）
+   · input 失焦 → 退出编辑，重绘 display
+   · 外部通过 'cfg-cron-refresh' 事件触发重绘（不切换模式）
+═══════════════════════════════════════════════════════════════ */
+function mkCronInput(field, value) {
+  const wrap = el('div', { class: 'cfg-cron-wrap' });
+
+  /* 真实 input */
+  const inp = el('input', {
+    class: 'cfg-input cfg-cron-input',
+    type: 'text',
+    'data-key': field.key,
+    placeholder: field.placeholder ?? '0 4,16 * * *',
+    spellcheck: 'false',
+    autocomplete: 'off',
+    autocorrect: 'off',
+    autocapitalize: 'none',
+  });
+  inp.value = value ?? '';
+
+  /* 着色展示层 */
+  const display = el('div', {
+    class: 'cfg-cron-display',
+    tabindex: '0',
+    role: 'textbox',
+    'aria-label': `${field.label}，点击编辑`,
+  });
+
+  /* 段标签行 */
+  const labelsRow = el('div', { class: 'cfg-cron-labels-row' });
+  _CRON_SEGMENTS.forEach(({ label }, i) =>
+    labelsRow.appendChild(el('span', { class: `cfg-cron-label cfg-cron-label-${i}`, textContent: label }))
+  );
+
+  /* ── 重绘着色层 ── */
+  function renderDisplay() {
+    const { raw, commented, parts, valid } = _parseCronValue(inp.value);
+    display.className = 'cfg-cron-display';
+    display.innerHTML = '';
+    labelsRow.style.visibility = 'hidden'; // 占位不折叠
+
+    if (!raw) {
+      display.appendChild(el('span', { class: 'cfg-cron-placeholder', textContent: field.placeholder ?? '0 4,16 * * *' }));
+      return;
+    }
+    if (commented) {
+      /* 用窄空格让 # 与段之间有视觉呼吸感 */
+      display.appendChild(el('span', { class: 'cfg-cron-comment-mark', textContent: '#\u2009' }));
+    }
+    if (valid) {
+      parts.forEach((part, i) => {
+        display.appendChild(el('span', {
+          class: `cfg-cron-seg cfg-cron-seg-${i}${commented ? ' cfg-cron-seg--muted' : ''}`,
+          textContent: part,
+          title: _CRON_SEGMENTS[i].title,
+        }));
+      });
+      labelsRow.style.visibility = '';
+    } else {
+      display.classList.add('cfg-cron-display--raw');
+      display.appendChild(el('span', { class: 'cfg-cron-raw-text', textContent: inp.value }));
+    }
+  }
+
+  /* ── 模式切换 ── */
+  function enterEditMode() {
+    display.style.display   = 'none';
+    labelsRow.style.display = 'none';
+    inp.style.display       = '';
+    requestAnimationFrame(() => { inp.focus(); inp.select(); });
+  }
+  function exitEditMode() {
+    inp.style.display       = 'none';
+    display.style.display   = '';
+    labelsRow.style.display = '';
+    renderDisplay();
+  }
+
+  inp.addEventListener('blur', exitEditMode);
+  display.addEventListener('click',   enterEditMode);
+  display.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === 'F2' || (e.key === ' ' && !e.ctrlKey)) { e.preventDefault(); enterEditMode(); }
+  });
+
+  /* 外部重绘钩子（_bindCronInterval 注释切换后调用） */
+  inp.addEventListener('cfg-cron-refresh', renderDisplay);
+
+  /* 初始：显示态 */
+  inp.style.display = 'none';
+  wrap.append(display, labelsRow, inp);
+  requestAnimationFrame(renderDisplay);
+  return wrap;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    字段行构建
@@ -662,8 +783,8 @@ function mkField(fieldDef, value) {
   const xf = VALUE_TRANSFORM[fieldDef.key];
   const displayValue = xf ? xf.load(value) : value;
 
-  const isFull = fieldDef.type === 'url-list' || fieldDef.type === 'chips' || !!fieldDef.fullWidth;
-  const row = el('div', { class: `cfg-field${isFull ? ' full-width' : ''}`, 'data-key': fieldDef.key });
+  const isFull = ['url-list', 'chips', 'cron'].includes(fieldDef.type) || !!fieldDef.fullWidth;
+  const row    = el('div', { class: `cfg-field${isFull ? ' full-width' : ''}`, 'data-key': fieldDef.key });
 
   if (!isFull) {
     const labelCol = el('div', { class: 'cfg-label-col' });
@@ -722,8 +843,12 @@ function _bindCronInterval(panel) {
   if (!cronInput) return;
 
   /* 徽标：插在 Cron 行与检测间隔行之间 */
-  const badge = el('div', { class: 'cfg-cron-badge' });
-  badge.innerHTML = `${_SVG_CLOCK}<span>定时计划已启用 · 检测间隔不生效</span>`;
+  const badge = el('div', {
+    class: 'cfg-cron-badge',
+    role: 'button',
+    tabindex: '0',
+    title: '点击暂停 / 恢复定时计划',
+  });
   cronRow.after(badge);
 
   /* 需要禁用的控件：数字输入框 + 步进按钮 */
@@ -732,13 +857,41 @@ function _bindCronInterval(panel) {
     ...intervalRow.querySelectorAll('button.cfg-step-btn'),
   ];
 
-  function update() {
-    const valid = _isValidCron(cronInput.value);
-    badge.classList.toggle('cfg-cron-badge--active', valid);
-    intervalRow.classList.toggle('cfg-field--muted', valid);
-    intervalControls.forEach(c => { c.disabled = valid; });
+function update() {
+    const { commented, valid } = _parseCronValue(cronInput.value);
+    const active = valid && !commented;
+    const paused = valid &&  commented;
+
+    if (active) {
+      badge.className = 'cfg-cron-badge cfg-cron-badge--active';
+      badge.innerHTML = `${_SVG_CLOCK}<span>定时计划已启用 · 检测间隔不生效</span>`;
+      intervalControls.forEach(c => { c.disabled = true; });
+      intervalRow.classList.add('cfg-field--muted');
+    } else if (paused) {
+      badge.className = 'cfg-cron-badge cfg-cron-badge--active cfg-cron-badge--paused';
+      badge.innerHTML = `${_SVG_CLOCK}<span>定时计划已暂停 · 检测间隔生效</span>`;
+      intervalControls.forEach(c => { c.disabled = false; });
+      intervalRow.classList.remove('cfg-field--muted');
+    } else {
+      badge.className = 'cfg-cron-badge';
+      badge.innerHTML = '';
+      intervalControls.forEach(c => { c.disabled = false; });
+      intervalRow.classList.remove('cfg-field--muted');
+    }
   }
 
+  function toggleCron() {
+    const { commented, valid, expr } = _parseCronValue(cronInput.value);
+    if (!valid) return;
+    cronInput.value = commented ? expr : ``;
+    cronInput.dispatchEvent(new Event('input'));
+    /* 通知 mkCronInput 重绘着色层（不切换到编辑模式） */
+    cronInput.dispatchEvent(new Event('cfg-cron-refresh'));
+    requestAnimationFrame(update);
+  }
+
+  badge.addEventListener('click',   toggleCron);
+  badge.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCron(); } });
   cronInput.addEventListener('input', update);
   requestAnimationFrame(update);
 }

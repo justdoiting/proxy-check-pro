@@ -1,7 +1,8 @@
 /* admin-cfg-form.css  v4 */
+ */
 
 /* ════════════════════════════════════════════════════════════
-   标题区：齿轮图标 + "配置" 文字
+   标题区
 ════════════════════════════════════════════════════════════ */
 .title-with-icon {
   display: flex;
@@ -25,7 +26,6 @@
 
 /* ════════════════════════════════════════════════════════════
    模式切换胶囊
-   布局：[模式切换按钮] [seg-divider] [双栏按钮]
 ════════════════════════════════════════════════════════════ */
 .cfg-mode-seg {
   display: flex;
@@ -37,7 +37,6 @@
   border-radius: 9px;
   flex-shrink: 0;
 }
-
 .cfg-mode-seg .seg-divider {
   width: 1px;
   height: 13px;
@@ -45,7 +44,6 @@
   margin: 0 2px;
   flex-shrink: 0;
 }
-
 .cfg-mode-btn {
   display: inline-flex;
   align-items: center;
@@ -72,23 +70,17 @@
 .cfg-mode-btn:hover {
   color: var(--fg);
 }
-
-/* 表单模式：默认激活态 */
 .cfg-mode-btn.active {
   background: var(--bg);
   color: var(--fg);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
 }
-
-/* YAML 模式激活态 */
 .cfg-mode-btn.active-yaml {
   background: color-mix(in srgb, var(--accent) 10%, var(--bg));
   color: var(--accent);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08),
     0 0 0 0.5px color-mix(in srgb, var(--accent) 30%, transparent);
 }
-
-/* 双栏激活态 */
 .cfg-mode-btn.split-active {
   background: color-mix(in srgb, var(--accent) 13%, var(--bg));
   color: var(--accent);
@@ -98,19 +90,20 @@
 .cfg-mode-btn.split-active svg {
   animation: splitPulse 0.3s ease-out;
 }
-
 @keyframes splitPulse {
-  0%   { transform: scaleX(1); }
-  50%  { transform: scaleX(1.18); }
-  100% { transform: scaleX(1); }
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(1.18);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
-   小屏（≤540px）适配
-   ── 合并后的单一 @media 块 ──
+   小屏（≤540px）— 合并块
 ════════════════════════════════════════════════════════════ */
 @media (max-width: 540px) {
-  /* 隐藏文字标签，仅保留图标 */
   .cfg-mode-btn span {
     display: none;
   }
@@ -118,16 +111,13 @@
     padding: 3px 6px;
     gap: 0;
   }
-  /* 胶囊内分隔线收紧 */
   .cfg-mode-seg .seg-divider {
     margin: 0 1px;
   }
-  /* 标题区收紧 */
   .title-with-icon {
     padding-right: 6px;
     margin-right: 1px;
   }
-  /* 双栏分隔线在小屏隐藏 */
   #splitDivider {
     display: none !important;
   }
@@ -212,7 +202,6 @@
   box-shadow: inset 0 0 0 1.5px
     color-mix(in srgb, var(--accent) 40%, transparent);
 }
-
 @media (max-width: 1099px) {
   .cfg-tab {
     padding: 4px 8px;
@@ -231,7 +220,8 @@
   margin: 0 -12px -12px;
   padding: 0 6px 14px 14px;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--border) 80%, transparent) transparent;
+  scrollbar-color: color-mix(in srgb, var(--border) 80%, transparent)
+    transparent;
   background: transparent;
   border-radius: 0 0 12px 12px;
   box-shadow: inset 0 0 12px var(--edit-shadow, rgba(0, 0, 0, 0.06));
@@ -251,7 +241,6 @@
   background-color: var(--accent);
 }
 
-/* 双栏模式（≥1100px） */
 @media (min-width: 1100px) {
   .cfg-panels-wrap.split-mode {
     display: flex;
@@ -308,11 +297,13 @@
   animation: cfg-spin 1s linear infinite;
 }
 @keyframes cfg-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
-   分组标题（左侧 accent 竖线）
+   分组标题
 ════════════════════════════════════════════════════════════ */
 .cfg-section {
   position: relative;
@@ -353,7 +344,7 @@
   padding: 6px 8px 6px 10px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
   border-radius: 6px;
-  transition: background 0.12s, margin 0.12s, padding 0.12s;
+  transition: background 0.12s, margin 0.12s;
 }
 .cfg-field:last-child {
   border-bottom: none;
@@ -361,10 +352,8 @@
 .cfg-field:hover {
   background: color-mix(in srgb, var(--accent) 4.5%, transparent);
   margin: 0 -2px;
-  padding: 6px 8px 6px 10px;
 }
 
-/* ── 普通字段标签列 ── */
 .cfg-label-col {
   grid-column: 1;
   grid-row: 1;
@@ -389,7 +378,6 @@
   margin-top: 0;
 }
 
-/* 普通字段：ctrl / hint / inline-hint */
 .cfg-field:not(.full-width) .cfg-ctrl {
   grid-column: 2;
   grid-row: 1;
@@ -399,7 +387,7 @@
   justify-content: flex-end;
 }
 .cfg-field:not(.full-width) .cfg-label-hint {
-  grid-column: 1 / -1;
+  grid-column: 1/-1;
   grid-row: 2;
   font-size: 10.5px;
   color: var(--muted);
@@ -407,11 +395,10 @@
   opacity: 0.85;
 }
 .cfg-field:not(.full-width) .cfg-inline-hint {
-  grid-column: 1 / -1;
+  grid-column: 1/-1;
   grid-row: 3;
 }
 
-/* ── 全宽字段 ── */
 .cfg-field.full-width {
   grid-template-columns: 1fr;
   row-gap: 4px;
@@ -420,9 +407,6 @@
 .cfg-field.full-width .cfg-label-text {
   grid-row: 1;
   grid-column: 1;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--fg);
   align-self: start;
   white-space: nowrap;
   overflow: hidden;
@@ -459,29 +443,22 @@
   grid-column: 1;
 }
 
-/* 全局 label-text 基础样式 */
 .cfg-label-text {
   font-size: 13px;
   font-weight: 500;
   color: var(--fg);
   align-self: center;
 }
-
-/* ctrl 内控件对齐 */
 .cfg-ctrl .cfg-input,
 .cfg-ctrl .cfg-sel-wrap,
 .cfg-ctrl .cfg-pw-wrap {
   width: 100%;
 }
-
-/* 数字步进器：内容宽度，min/max 两端约束 */
 .cfg-ctrl .cfg-number-wrap {
   width: auto;
   min-width: 120px;
   max-width: 500px;
 }
-
-/* 选择器 / 文本框 / 密码框 */
 .cfg-ctrl .cfg-sel-wrap,
 .cfg-field:not(.full-width) .cfg-ctrl .cfg-input,
 .cfg-field:not(.full-width) .cfg-ctrl .cfg-pw-wrap {
@@ -489,12 +466,23 @@
   max-width: 500px;
 }
 
-/* 单栏宽屏：统一收缩到 50% */
 @media (min-width: 900px) {
-  .cfg-panels-wrap:not(.split-mode) .cfg-field:not(.full-width) .cfg-ctrl .cfg-number-wrap,
-  .cfg-panels-wrap:not(.split-mode) .cfg-field:not(.full-width) .cfg-ctrl .cfg-sel-wrap,
-  .cfg-panels-wrap:not(.split-mode) .cfg-field:not(.full-width) .cfg-ctrl .cfg-input,
-  .cfg-panels-wrap:not(.split-mode) .cfg-field:not(.full-width) .cfg-ctrl .cfg-pw-wrap {
+  .cfg-panels-wrap:not(.split-mode)
+    .cfg-field:not(.full-width)
+    .cfg-ctrl
+    .cfg-number-wrap,
+  .cfg-panels-wrap:not(.split-mode)
+    .cfg-field:not(.full-width)
+    .cfg-ctrl
+    .cfg-sel-wrap,
+  .cfg-panels-wrap:not(.split-mode)
+    .cfg-field:not(.full-width)
+    .cfg-ctrl
+    .cfg-input,
+  .cfg-panels-wrap:not(.split-mode)
+    .cfg-field:not(.full-width)
+    .cfg-ctrl
+    .cfg-pw-wrap {
     max-width: clamp(120px, 50%, 500px);
   }
 }
@@ -577,8 +565,8 @@
   font-family: inherit;
   outline: none;
   min-width: 0;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, color 0.15s;
-  letter-spacing: 1px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s,
+    color 0.15s;
 }
 .cfg-input:focus {
   border-color: var(--accent-light);
@@ -590,11 +578,8 @@
 }
 
 /* ════════════════════════════════════════════════════════════
-   特殊保留值输入框高亮
-   触发条件：speed-test-url = "random" | system-proxy = "direct"
+   特殊保留值高亮
 ════════════════════════════════════════════════════════════ */
-
-/* 包裹容器：flex 横排，右侧放徽章 */
 .cfg-special-wrap {
   display: flex;
   align-items: center;
@@ -605,8 +590,6 @@
   flex: 1;
   min-width: 0;
 }
-
-/* 输入框高亮态 */
 .cfg-input--special {
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 6%, var(--input-bg));
@@ -616,8 +599,6 @@
 .cfg-input--special:focus {
   box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--accent) 20%, transparent);
 }
-
-/* 保留值徽章 */
 .cfg-special-badge {
   flex-shrink: 0;
   display: inline-flex;
@@ -636,7 +617,162 @@
 }
 
 /* ════════════════════════════════════════════════════════════
-   密码框 + SVG 显隐切换
+   Cron 高亮输入控件
+════════════════════════════════════════════════════════════ */
+
+/* 容器 */
+.cfg-cron-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* ── 着色展示层 ── */
+.cfg-cron-display {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 5px; /* 段间距 */
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', 'Consolas', monospace);
+  font-size: 13px;
+  cursor: text;
+  outline: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.cfg-cron-display::-webkit-scrollbar {
+  display: none;
+}
+.cfg-cron-display:hover {
+  border-color: color-mix(in srgb, var(--border) 50%, var(--fg));
+}
+.cfg-cron-display:focus {
+  border-color: var(--accent-light);
+  box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* # 前缀标记（注释态） */
+.cfg-cron-comment-mark {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  opacity: 0.55;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+/* 各段共用底色 + 内边距 */
+.cfg-cron-seg {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+/* 注释态：半透明 + 删除线 */
+.cfg-cron-seg--muted {
+  opacity: 0.4;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+/* 五段颜色 */
+.cfg-cron-seg-0 {
+  color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 11%, transparent);
+}
+.cfg-cron-seg-1 {
+  color: #8b5cf6;
+  background: color-mix(in srgb, #8b5cf6 11%, transparent);
+}
+.cfg-cron-seg-2 {
+  color: #10b981;
+  background: color-mix(in srgb, #10b981 11%, transparent);
+}
+.cfg-cron-seg-3 {
+  color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 11%, transparent);
+}
+.cfg-cron-seg-4 {
+  color: #ec4899;
+  background: color-mix(in srgb, #ec4899 11%, transparent);
+}
+
+/* 非法 / 部分输入（灰色原文） */
+.cfg-cron-display--raw {
+  color: var(--muted);
+}
+.cfg-cron-raw-text {
+  color: var(--fg);
+  opacity: 0.7;
+}
+
+/* 空值 placeholder */
+.cfg-cron-placeholder {
+  color: var(--muted);
+  opacity: 0.45;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ── 段标签行 ── */
+.cfg-cron-labels-row {
+  display: flex;
+  gap: 5px;
+  padding: 0 2px;
+}
+.cfg-cron-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+/* 与段色对应 */
+.cfg-cron-label-0 {
+  color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 9%, transparent);
+}
+.cfg-cron-label-1 {
+  color: #8b5cf6;
+  background: color-mix(in srgb, #8b5cf6 9%, transparent);
+}
+.cfg-cron-label-2 {
+  color: #10b981;
+  background: color-mix(in srgb, #10b981 9%, transparent);
+}
+.cfg-cron-label-3 {
+  color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 9%, transparent);
+}
+.cfg-cron-label-4 {
+  color: #ec4899;
+  background: color-mix(in srgb, #ec4899 9%, transparent);
+}
+
+/* ── 真实 input（编辑模式） ── */
+.cfg-cron-input {
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', 'Consolas', monospace);
+  letter-spacing: 0.04em;
+}
+
+/* ════════════════════════════════════════════════════════════
+   密码框
 ════════════════════════════════════════════════════════════ */
 .cfg-pw-wrap {
   position: relative;
@@ -685,7 +821,6 @@
   width: 100%;
   min-width: 0;
 }
-
 .cfg-sel-trigger {
   display: flex;
   align-items: center;
@@ -729,7 +864,6 @@
 .cfg-sel-trigger.open .cfg-sel-arrow {
   transform: rotate(180deg);
 }
-
 .cfg-sel-dropdown {
   position: absolute;
   top: calc(100% + 4px);
@@ -746,8 +880,14 @@
   animation: selDropIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes selDropIn {
-  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .cfg-sel-option {
   padding: 8px 12px;
@@ -759,9 +899,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cfg-sel-option:first-child { border-radius: 10px 10px 0 0; }
-.cfg-sel-option:last-child  { border-radius: 0 0 10px 10px; }
-.cfg-sel-option:only-child  { border-radius: 10px; }
+.cfg-sel-option:first-child {
+  border-radius: 10px 10px 0 0;
+}
+.cfg-sel-option:last-child {
+  border-radius: 0 0 10px 10px;
+}
+.cfg-sel-option:only-child {
+  border-radius: 10px;
+}
 .cfg-sel-option:hover {
   background: color-mix(in srgb, var(--fg) 5%, transparent);
 }
@@ -831,7 +977,7 @@
 }
 
 /* ════════════════════════════════════════════════════════════
-   多选标签 Chips
+   Chips
 ════════════════════════════════════════════════════════════ */
 .cfg-chips {
   display: flex;
@@ -988,7 +1134,7 @@
 }
 
 /* ════════════════════════════════════════════════════════════
-   内联字段校验提示
+   内联校验提示
 ════════════════════════════════════════════════════════════ */
 .cfg-inline-hint {
   display: flex;
@@ -1003,8 +1149,14 @@
   animation: hintFadeIn 0.18s ease-out;
 }
 @keyframes hintFadeIn {
-  from { opacity: 0; transform: translateY(-3px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .cfg-inline-hint svg {
   width: 12px;
@@ -1032,10 +1184,10 @@
 }
 
 /* ════════════════════════════════════════════════════════════
-   Cron 定时计划启用徽标
-   · 默认隐藏（display:none）
-   · .cfg-cron-badge--active 时显示（display:flex）
-   · 插入位置：Cron 表达式字段行之后、检测间隔字段行之前
+   Cron 定时计划徽标
+   · 默认隐藏；.cfg-cron-badge--active 显示
+   · .cfg-cron-badge--paused  → 橙色（暂停态）
+   · 均可点击（cursor: pointer）
 ════════════════════════════════════════════════════════════ */
 .cfg-cron-badge {
   display: none;
@@ -1049,16 +1201,35 @@
   color: var(--success, #22c55e);
   background: color-mix(in srgb, var(--success, #22c55e) 9%, transparent);
   border: 1px solid color-mix(in srgb, var(--success, #22c55e) 25%, transparent);
+  cursor: pointer;
+  user-select: none;
   animation: hintFadeIn 0.18s ease-out;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.cfg-cron-badge:hover {
+  background: color-mix(in srgb, var(--success, #22c55e) 14%, transparent);
+  border-color: color-mix(in srgb, var(--success, #22c55e) 40%, transparent);
 }
 .cfg-cron-badge--active {
   display: flex;
 }
+
+/* 暂停态 → 橙色 */
+.cfg-cron-badge--paused {
+  color: var(--warning, #f59e0b);
+  background: color-mix(in srgb, var(--warning, #f59e0b) 9%, transparent);
+  border-color: color-mix(in srgb, var(--warning, #f59e0b) 25%, transparent);
+}
+.cfg-cron-badge--paused:hover {
+  background: color-mix(in srgb, var(--warning, #f59e0b) 14%, transparent);
+  border-color: color-mix(in srgb, var(--warning, #f59e0b) 40%, transparent);
+}
+
 .cfg-cron-badge svg {
   width: 13px;
   height: 13px;
   flex-shrink: 0;
-  stroke: var(--success, #22c55e);
+  stroke: currentColor;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1070,7 +1241,7 @@
 }
 
 /* ════════════════════════════════════════════════════════════
-   快速配置预览浮动面板
+   快速预览浮动面板
 ════════════════════════════════════════════════════════════ */
 .cfg-preview-panel {
   z-index: 9999;
@@ -1086,8 +1257,14 @@
   animation: pvSlideIn 0.18s cubic-bezier(0.22, 0.68, 0, 1.2) both;
 }
 @keyframes pvSlideIn {
-  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .pv-header {
   display: flex;
@@ -1232,20 +1409,38 @@
   text-overflow: ellipsis;
   max-width: 140px;
 }
-.pv-v.ok    { color: var(--success, #22c55e); }
-.pv-v.warn  { color: var(--warning, #f59e0b); }
-.pv-v.info  { color: var(--accent, #3b82f6); }
-.pv-v.muted { color: var(--muted); opacity: 0.6; }
+.pv-v.ok {
+  color: var(--success, #22c55e);
+}
+.pv-v.warn {
+  color: var(--warning, #f59e0b);
+}
+.pv-v.info {
+  color: var(--accent, #3b82f6);
+}
+.pv-v.muted {
+  color: var(--muted);
+  opacity: 0.6;
+}
 .pv-status-icon {
   width: 12px;
   height: 12px;
   flex-shrink: 0;
   stroke-width: 2.5;
 }
-.pv-status-icon.ok    { color: var(--success, #22c55e); }
-.pv-status-icon.warn  { color: var(--warning, #f59e0b); }
-.pv-status-icon.info  { color: var(--accent, #3b82f6); }
-.pv-status-icon.muted { color: var(--muted); opacity: 0.5; }
+.pv-status-icon.ok {
+  color: var(--success, #22c55e);
+}
+.pv-status-icon.warn {
+  color: var(--warning, #f59e0b);
+}
+.pv-status-icon.info {
+  color: var(--accent, #3b82f6);
+}
+.pv-status-icon.muted {
+  color: var(--muted);
+  opacity: 0.5;
+}
 .pv-footer {
   display: flex;
   align-items: center;
@@ -1294,7 +1489,9 @@
   .cfg-pw-input,
   .cfg-number-wrap input[type='number'],
   .cfg-sel-trigger,
-  .cfg-url-item .cfg-url-input {
+  .cfg-url-item .cfg-url-input,
+  .cfg-cron-display,
+  .cfg-cron-input {
     font-size: 16px !important;
   }
   .cfg-step-btn {
