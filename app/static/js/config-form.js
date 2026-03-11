@@ -324,7 +324,7 @@ const FIELD_VALIDATORS = {
   'download-timeout': v => { if (Number(v) === 0) return { level: 'warn', msg: '未设置，极慢节点会阻塞测速队列，建议设为 10s' }; return null; },
   'download-mb': v => { if (Number(v) === 0) return { level: 'info', msg: '未限制单节点下载量，高并发时可能消耗大量流量，建议 20 MB' }; return null; },
   'success-limit': v => { const n = Number(v); if (n > 0 && n < 30) return { level: 'info', msg: `保存上限 ${n} 较少，建议 ≥ 100` }; return null; },
-    /* success-rate 校验：入参为界面显示值（0–100%），存储值为其 ÷100 */
+  /* success-rate 校验：入参为界面显示值（0–100%），存储值为其 ÷100 */
   'success-rate': v => {
     const n = Number(v);
     if (n === 0) return { level: 'info', msg: '0 = 不过滤，所有订阅均保留' };
@@ -383,11 +383,11 @@ const _CRON_SEGMENTS = [
 
 /* ═══════════════════════════ Cron 值解析 ═══════════════════════════ */
 function _parseCronValue(v) {
-  const raw       = (v ?? '').trim();
+  const raw = (v ?? '').trim();
   const commented = raw.startsWith('#');
-  const expr      = commented ? raw.replace(/^#\s*/, '').trim() : raw;
-  const parts     = expr ? expr.split(/\s+/) : [];
-  const valid     = parts.length === 5 && parts.every(p => p.length > 0 && /^[0-9*,\-/]+$/.test(p));
+  const expr = commented ? raw.replace(/^#\s*/, '').trim() : raw;
+  const parts = expr ? expr.split(/\s+/) : [];
+  const valid = parts.length === 5 && parts.every(p => p.length > 0 && /^[0-9*,\-/]+$/.test(p));
   return { raw, commented, expr, parts, valid };
 }
 
@@ -493,7 +493,7 @@ function mkPassword(field, value) {
   const inp = el('input', {
     class: 'cfg-input cfg-pw-input', type: 'password',
     'data-key': field.key, placeholder: field.placeholder ?? '••••••••',
-    autocomplete: 'current-password',
+    autocomplete: 'off',
   });
   inp.value = value ?? '';
   const btn = el('button', { type: 'button', class: 'cfg-pw-toggle', title: '显示/隐藏密码' });
@@ -519,7 +519,7 @@ function mkInput(field, value) {
   const inp = el('input', { class: 'cfg-input', type: 'text', 'data-key': field.key, placeholder: field.placeholder ?? '' });
   inp.value = value ?? '';
 
-    const specialDefs = SPECIAL_INPUT_VALUES[field.key];
+  const specialDefs = SPECIAL_INPUT_VALUES[field.key];
   if (!specialDefs) return inp;
 
   /* ── 含特殊值定义：包裹一层 flex 容器，右侧插入徽章 ── */
@@ -551,6 +551,8 @@ function mkNumber(field, value) {
   const wrap = el('div', { class: 'cfg-number-wrap' });
   const inp = el('input', {
     type: 'number', 'data-key': field.key,
+    // min: String(field.min ?? ''),
+    // max: String(field.max ?? ''),
     step: String(field.step ?? 1), placeholder: field.placeholder ?? '',
   });
   inp.value = (value !== undefined && value !== null && value !== '') ? value : '';
@@ -747,20 +749,20 @@ function mkCronInput(field, value) {
 
   /* ── 模式切换 ── */
   function enterEditMode() {
-    display.style.display   = 'none';
+    display.style.display = 'none';
     labelsRow.style.display = 'none';
-    inp.style.display       = '';
+    inp.style.display = '';
     requestAnimationFrame(() => { inp.focus(); inp.select(); });
   }
   function exitEditMode() {
-    inp.style.display       = 'none';
-    display.style.display   = '';
+    inp.style.display = 'none';
+    display.style.display = '';
     labelsRow.style.display = '';
     renderDisplay();
   }
 
   inp.addEventListener('blur', exitEditMode);
-  display.addEventListener('click',   enterEditMode);
+  display.addEventListener('click', enterEditMode);
   display.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === 'F2' || (e.key === ' ' && !e.ctrlKey)) { e.preventDefault(); enterEditMode(); }
   });
@@ -779,12 +781,12 @@ function mkCronInput(field, value) {
    字段行构建
 ═══════════════════════════════════════════════════════════════ */
 function mkField(fieldDef, value) {
-    /* 应用加载时的值变换（如 success-rate ×100） */
+  /* 应用加载时的值变换（如 success-rate ×100） */
   const xf = VALUE_TRANSFORM[fieldDef.key];
   const displayValue = xf ? xf.load(value) : value;
 
   const isFull = ['url-list', 'chips', 'cron'].includes(fieldDef.type) || !!fieldDef.fullWidth;
-  const row    = el('div', { class: `cfg-field${isFull ? ' full-width' : ''}`, 'data-key': fieldDef.key });
+  const row = el('div', { class: `cfg-field${isFull ? ' full-width' : ''}`, 'data-key': fieldDef.key });
 
   if (!isFull) {
     const labelCol = el('div', { class: 'cfg-label-col' });
@@ -799,12 +801,12 @@ function mkField(fieldDef, value) {
   if (fieldDef.ctrlWidth) ctrlWrap.style.maxWidth = fieldDef.ctrlWidth;
   let ctrl;
   switch (fieldDef.type) {
-    case 'number':   ctrl = mkNumber(fieldDef, displayValue); break;
-    case 'toggle':   ctrl = mkToggle(fieldDef.key, displayValue); break;
-    case 'select':   ctrl = mkSelect(fieldDef, displayValue); break;
-    case 'chips':    ctrl = mkChips(fieldDef, displayValue); break;
+    case 'number': ctrl = mkNumber(fieldDef, displayValue); break;
+    case 'toggle': ctrl = mkToggle(fieldDef.key, displayValue); break;
+    case 'select': ctrl = mkSelect(fieldDef, displayValue); break;
+    case 'chips': ctrl = mkChips(fieldDef, displayValue); break;
     case 'url-list': ctrl = mkUrlList(fieldDef, displayValue); break;
-    default:         ctrl = mkInput(fieldDef, displayValue); break;
+    default: ctrl = mkInput(fieldDef, displayValue); break;
   }
   ctrlWrap.appendChild(ctrl);
   row.appendChild(ctrlWrap);
@@ -835,8 +837,8 @@ function _isValidCron(expr) {
  * · 徽标仅 UI 展示，不写入配置
  * ─────────────────────────────────────────────────────────────────── */
 function _bindCronInterval(panel) {
-  const cronRow      = panel.querySelector('.cfg-field[data-key="cron-expression"]');
-  const intervalRow  = panel.querySelector('.cfg-field[data-key="check-interval"]');
+  const cronRow = panel.querySelector('.cfg-field[data-key="cron-expression"]');
+  const intervalRow = panel.querySelector('.cfg-field[data-key="check-interval"]');
   if (!cronRow || !intervalRow) return;
 
   const cronInput = cronRow.querySelector('input[data-key="cron-expression"]');
@@ -857,10 +859,10 @@ function _bindCronInterval(panel) {
     ...intervalRow.querySelectorAll('button.cfg-step-btn'),
   ];
 
-function update() {
+  function update() {
     const { commented, valid } = _parseCronValue(cronInput.value);
     const active = valid && !commented;
-    const paused = valid &&  commented;
+    const paused = valid && commented;
 
     if (active) {
       badge.className = 'cfg-cron-badge cfg-cron-badge--active';
@@ -890,7 +892,7 @@ function update() {
     requestAnimationFrame(update);
   }
 
-  badge.addEventListener('click',   toggleCron);
+  badge.addEventListener('click', toggleCron);
   badge.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCron(); } });
   cronInput.addEventListener('input', update);
   requestAnimationFrame(update);
@@ -915,7 +917,7 @@ function buildPanel(tabId) {
     }
   }
 
-    /* 存储：条件分组切换 */
+  /* 存储：条件分组切换 */
   if (tabId === 'storage') {
     const sel = panel.querySelector('select.cfg-select-native[data-key="save-method"]');
     if (sel) {
@@ -926,12 +928,12 @@ function buildPanel(tabId) {
       sync(sel.value);
     }
   }
-  
+
   /* 任务：Cron ↔ 检测间隔联动 */
   if (tabId === 'schedule') {
     _bindCronInterval(panel);
   }
-  
+
   _built.add(tabId);
 }
 
