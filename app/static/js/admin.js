@@ -2648,6 +2648,25 @@ import { initQuickPreview } from './cfg-quickpreview.js';
       btn.addEventListener('click', async e => {
         e.preventDefault()
         e.stopPropagation()
+
+        const r = await sfetch(API.status)
+        if (!r.ok) {
+          if (els.statusEl) {
+            els.statusEl.textContent = '获取状态失败'
+            els.statusEl.className = 'muted status-label status-error'
+          }
+          return
+        }
+
+        const d = r.payload || {}
+        const isSubStoreRunning = !!d.isSubStoreRunning;
+
+        if (!isSubStoreRunning) {
+          showToast('Sub-Store 服务未运行，无法分享订阅', 'warn')
+          showToast('请修改配置或使用内置文件服务', 'info', 6000)
+          return
+        }
+
         const menu = document.getElementById('shareMenu')
         if (menu.classList.contains('active')) {
           menu.classList.remove('active')
