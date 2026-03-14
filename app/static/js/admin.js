@@ -1478,11 +1478,13 @@ import { initQuickPreview } from './cfg-quickpreview.js';
         <svg class="icon-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
         </svg>
-        <span>检测结果分析</span>
+        <span>检测结果摘要</span>
       </div>
-      <svg class="icon-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
+      <div class="summary-header-actions">
+        <svg class="icon-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
     </div>
     <div class="summary-content-wrapper">
       <div class="tip-content">
@@ -1507,6 +1509,14 @@ import { initQuickPreview } from './cfg-quickpreview.js';
         <!-- 功能行：解锁状态 -->
         ${unlockDetailsRow}
       </div>
+      <a href="/analysis"  class="summary-analysis-btn" target="_blank" rel="noopener noreferrer" title="查看完整分析报告">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        <span>完整报告</span>
+      </a>
     </div>
   `;
 
@@ -1525,6 +1535,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
 
     summaryCard.style.display = (actionState === 'idle') ? 'flex' : 'none';
   }
+
   /**
    *隐藏上次检测结果
    *

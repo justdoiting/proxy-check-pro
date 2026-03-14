@@ -1009,6 +1009,36 @@ main {
   color: var(--muted);
 }
 
+.summary-analysis-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  padding: 6px 0;
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.summary-analysis-btn svg {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.summary-analysis-btn:hover {
+  color: var(--accent);
+}
+
+.summary-analysis-btn:hover svg {
+  opacity: 1;
+}
+
 .icon-spark {
   width: 14px;
   height: 14px;
