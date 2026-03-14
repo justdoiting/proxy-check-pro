@@ -499,7 +499,7 @@ function mkPassword(field, value) {
   const inp = el('input', {
     class: 'cfg-input cfg-pw-input', type: 'password',
     'data-key': field.key, placeholder: field.placeholder ?? '••••••••',
-    autocomplete: 'off',
+    autocomplete: 'new-password',
   });
   inp.value = value ?? '';
   const btn = el('button', { type: 'button', class: 'cfg-pw-toggle', title: '显示/隐藏密码' });
