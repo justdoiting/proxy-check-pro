@@ -2537,7 +2537,8 @@
 
             proj(lon, lat) {
                 const mx = 2, my = 4;
-                let dlon = lon - this.origin.lon;
+                const centerLon = this.origin.lon + 35; // 中心东移 35°，China 偏左，美洲入画
+                let dlon = lon - centerLon;
                 while (dlon > 180) dlon -= 360;
                 while (dlon < -180) dlon += 360;
                 // 原点居中，±180° 精确到画布两侧
@@ -2656,7 +2657,7 @@
                     for (let i = 0; i < ring.length; i++) {
                         const [lon, lat] = ring[i];
                         if (i === 0) {
-                            curDlon = lon - this.origin.lon;
+                            curDlon = lon - (this.origin.lon + 35);
                             while (curDlon > 180) curDlon -= 360;
                             while (curDlon < -180) curDlon += 360;
                         } else {
@@ -2708,14 +2709,14 @@
                 ctx.strokeStyle = 'rgba(255,255,255,0.035)';
                 ctx.lineWidth = 0.5;
                 for (let d = -180; d <= 180; d += 30) {
-                    const lon = this.origin.lon + d;
+                    const lon = this.origin.lon + 35 + d;
                     const [x, y1] = this.proj(lon, 85);
                     const [, y2] = this.proj(lon, -60);
                     ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
                 }
                 for (let lat = -60; lat <= 85; lat += 30) {
-                    const [x1, y] = this.proj(this.origin.lon - 180, lat);
-                    const [x2] = this.proj(this.origin.lon + 180, lat);
+        const [x1, y] = this.proj(this.origin.lon + 35 - 180, lat);
+    const [x2]    = this.proj(this.origin.lon + 35 + 180, lat);
                     ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
                 }
                 ctx.restore();
