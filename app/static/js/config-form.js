@@ -53,9 +53,19 @@ const SCHEMA = [
     tab: 'subscriptions',
     sections: [
       {
+        title: '线程基准',
+        fields: [
+          {
+            key: 'concurrent',
+            label: '基准并发',
+            type: 'number', min: 1, max: 100, placeholder: '20',
+            hint: '拉取订阅的并发数；并作为自动并发的计算基准'
+          },
+        ],
+      },
+      {
         title: '获取参数',
         fields: [
-          { key: 'concurrent', label: '拉取线程', type: 'number', min: 1, max: 100, placeholder: '20', hint: '拉取订阅的并发数，也是自适应高并发的线程基准' },
           { key: 'sub-urls-retry', label: '重试次数', type: 'number', min: 1, max: 5, placeholder: '3', hint: '获取订阅失败重试次数' },
           { key: 'sub-urls-timeout', label: '下载超时 (s)', type: 'number', min: 5, max: 30, placeholder: '10', hint: '建议 10–60' },
           { key: 'success-rate', label: '成功率阈值 (%)', type: 'number', min: 0.01, max: 100, placeholder: '0', hint: '低于此值将标记订阅失效' },
@@ -390,12 +400,97 @@ const SCHEMA = [
   },
 ];
 
+/* ════════════════════════════════════════════════════════════
+   并发估算工具（对应后端 NewLogDecay / NewExpDecay / NewPowerDecay）
+════════════════════════════════════════════════════════════ */
+
+const _logDecay = (amp, k, base) => x => { const v = Math.log(1 + k * x); return base + amp * (v > 0 ? v / (1 + v) : 0); };
+const _expDecay = (amp, b, base) => x => base + amp * (1 - Math.exp(-b * x));
+const _powerDecay = (amp, p, alpha, base) => x => { if (x <= 0) return base; const xp = x ** p; return base + amp * xp / (xp + alpha); };
+const _roundInt = v => Math.round(v);
+
+/** 从表单读取 number 字段当前值，找不到则返回 fallback */
+function _readNum(key, fallback = 0) {
+  const inp = document.querySelector(`input[type="number"][data-key="${key}"]`);
+  const v = parseFloat(inp?.value);
+  return (isNaN(v) || v < 0) ? fallback : v;
+}
+
+/**
+ * _estimateAuto — 根据 concurrent 基准估算三个阶段的自动并发数。
+ * 对应后端 NewProxyChecker 中的自动分支，proxyCount 未知时以 concurrent 代替。
+ *
+ * @returns {{ alive: number, speed: number, media: number, base: number }}
+ */
+function _estimateAuto() {
+  const base = Math.max(1, _readNum('concurrent', 20));
+
+  const alive = _roundInt(_logDecay(400, 0.005, 400)(base));
+
+  // 测速：有 total-speed-limit 时按带宽/速度比估算，否则用 PowerDecay
+  const totalLimit = _readNum('total-speed-limit', 0);
+  const minSpeedKB = Math.max(1, _readNum('min-speed', 128));
+  let speed;
+  if (totalLimit > 0) {
+    const r = minSpeedKB / 1024;          // KB/s → MB/s
+    speed = Math.max(1, Math.min(Math.round(totalLimit / r), base));
+  } else {
+    speed = Math.min(base, _roundInt(_powerDecay(32, 1.1, 32, 1)(base)));
+  }
+
+  const media = _roundInt(_expDecay(400, 0.001, 100)(base));
+
+  return { alive, speed, media, base };
+}
+
+/** 判断三个并发字段中是否有任意一个为 0（触发联动自动模式）*/
+function _anyAutoMode() {
+  return _readNum('alive-concurrent') === 0
+    || _readNum('speed-concurrent') === 0
+    || _readNum('media-concurrent') === 0;
+}
 
 /* ═══════════════════════════ 字段校验规则 ═══════════════════════════ */
 const FIELD_VALIDATORS = {
-  'alive-concurrent': v => { const n = Number(v); if (n > 500) return { level: 'warn', msg: `并发 ${n} 过高，超出多数路由器处理能力，建议 100–300` }; if (n > 300) return { level: 'info', msg: `并发 ${n} 偏高，请确认机器性能` }; if (n === 0) return { level: 'ok', msg: '自动模式：根据 concurrent 基准自动计算' }; return null; },
-  'speed-concurrent': v => { const n = Number(v); if (n > 32) return { level: 'warn', msg: `并发 ${n} 较高，测速会占用大量带宽，建议配合 total-speed-limit` }; if (n === 0) return { level: 'ok', msg: '自动模式' }; return null; },
-  'media-concurrent': v => { const n = Number(v); if (n === 0) return { level: 'ok', msg: '自动模式' }; if (n > 0 && n <= 100) return { level: 'info', msg: `并发 ${n} 合理` }; if (n > 200) return { level: 'warn', msg: `并发 ${n} 较高，建议不超过200` }; return null; },
+  'concurrent': v => {
+    if (!_anyAutoMode()) return null;
+    const n = Number(v);
+    const { alive, speed, media } = _estimateAuto();
+    if (n > 100) return { level: 'warn', msg: `并发 ${n} 过高，将影响拉取订阅的成功率` };
+    return { level: 'info', msg: `自动模式基准 ${n} → 测活 ≈ ${alive} · 测速 ≈ ${speed} · 媒体 ≈ ${media}` };
+  },
+  'alive-concurrent': v => {
+    const n = Number(v);
+    if (n === 0 || _anyAutoMode()) {
+      const { alive, speed, media, base } = _estimateAuto();
+      return { level: 'ok', msg: `自适应模式（基准 =${base}）· 测活 ≈ ${alive} · 测速 ≈ ${speed} · 媒体 ≈ ${media}` };
+    }
+    if (n > 1000) return { level: 'warn', msg: `并发 ${n} 过高，超出多数路由器处理能力，可能影响正常上网，建议 100–300` };
+    if (n > 500) return { level: 'warn', msg: `并发 ${n} 过高，超出多数路由器处理能力，建议 100–300` };
+    if (n > 300) return { level: 'info', msg: `并发 ${n} 偏高，请确认机器性能` };
+    return null;
+  },
+
+  'speed-concurrent': v => {
+    const n = Number(v);
+    if (n === 0 || _anyAutoMode()) {
+      const { alive, speed, media, base } = _estimateAuto();
+      return { level: 'ok', msg: `自适应模式（基准 =${base}）· 测活 ≈ ${alive} · 测速 ≈ ${speed} · 媒体 ≈ ${media}` };
+    }
+    if (n > 32) return { level: 'warn', msg: `并发 ${n} 较高，测速会占用大量带宽，建议配合 total-speed-limit` };
+    return null;
+  },
+
+  'media-concurrent': v => {
+    const n = Number(v);
+    if (n === 0 || _anyAutoMode()) {
+      const { alive, speed, media, base } = _estimateAuto();
+      return { level: 'ok', msg: `自适应模式（基准 =${base}）· 测活 ≈ ${alive} · 测速 ≈ ${speed} · 媒体 ≈ ${media}` };
+    }
+    if (n > 200) return { level: 'warn', msg: `并发 ${n} 较高，建议不超过 200` };
+    if (n > 0 && n <= 100) return { level: 'info', msg: `并发 ${n} 合理` };
+    return null;
+  },
   'timeout': v => { const n = Number(v); if (n < 3000) return { level: 'warn', msg: `超时 ${n}ms 过短，可能大量误杀正常节点` }; if (n > 15000) return { level: 'info', msg: `超时 ${n}ms 较长，单次检测耗时会明显增加` }; return null; },
   'check-interval': v => { const n = Number(v); if (!n) return null; if (n < 120) return { level: 'warn', msg: `间隔 ${n} 分钟过于频繁，易触发运营商阻断，建议 ≥ 720` }; if (n < 360) return { level: 'info', msg: `间隔 ${n} 分钟偏短，建议 720+` }; if (n >= 720) return { level: 'ok', msg: `间隔 ${n} 分钟（约 ${Math.round(n / 60)} 小时），频率合理` }; return null; },
   'min-speed': v => { const n = Number(v); if (n === 0) return { level: 'info', msg: '未设置最低速度，极慢节点均会保留' }; if (n > 2000) return { level: 'warn', msg: `${n} KB/s 偏高，建议 ≤ 500` }; return null; },
@@ -566,16 +661,43 @@ function _updateInlineHint(row, result) {
 }
 
 function _attachValidator(row, fieldDef) {
-  const fn = FIELD_VALIDATORS[fieldDef.key];
-  if (!fn || fieldDef.type !== 'number') return;
+  if (fieldDef.type !== 'number') return;
   const inp = row.querySelector('input[type="number"]');
   if (!inp) return;
-  const run = () => _updateInlineHint(row, fn(inp.value));
-  inp.addEventListener('input', run);
-  inp.addEventListener('change', run);
-  requestAnimationFrame(run);
-}
 
+  // ── 有校验函数的字段：绑定校验逻辑 ──
+  const fn = FIELD_VALIDATORS[fieldDef.key];
+  if (fn) {
+    const run = () => _updateInlineHint(row, fn(inp.value));
+    inp.addEventListener('input', run);
+    inp.addEventListener('change', run);
+    requestAnimationFrame(run);
+  }
+
+  // ── 三个并发字段互相联动（同 tab 直接触发）──
+  const CONCURRENT_KEYS = ['alive-concurrent', 'speed-concurrent', 'media-concurrent'];
+  if (CONCURRENT_KEYS.includes(fieldDef.key)) {
+    inp.addEventListener('input', () => {
+      CONCURRENT_KEYS.filter(k => k !== fieldDef.key).forEach(k => {
+        document.querySelector(`input[type="number"][data-key="${k}"]`)
+          ?.dispatchEvent(new Event('change'));
+      });
+    });
+  }
+
+  // ── 基准字段：防抖 1s 后串行保存 + 重载 ──
+  const TRIGGER_KEYS = ['concurrent', 'total-speed-limit', 'min-speed', 'alive-concurrent', 'speed-concurrent', 'media-concurrent'];
+  if (TRIGGER_KEYS.includes(fieldDef.key)) {
+    let _basisTimer = null;
+    inp.addEventListener('input', () => {
+      clearTimeout(_basisTimer);
+      _basisTimer = setTimeout(async () => {
+        await window.saveConfigWithValidation?.();
+        await window.loadConfigValidated?.();
+      }, 1500);
+    });
+  }
+}
 
 /* ═══════════════════════════ 链接徽章 ═══════════════════════════ */
 const LINK_ICONS = {

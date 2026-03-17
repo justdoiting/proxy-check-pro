@@ -2984,5 +2984,6 @@ import { initQuickPreview } from './cfg-quickpreview.js';
     switchEditorMode('form')   // 确保初始状态正确（搜索按钮隐藏等）
     window.showToast = showToast
     window.saveConfigWithValidation = saveConfigWithValidation
+    window.loadConfigValidated = loadConfigValidated
   })()
 })()
