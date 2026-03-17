@@ -670,8 +670,8 @@ func UpdateSubStore(yamlData []byte) {
 func processSingboxFile(sbc *config.SingBoxConfig, defaultJS, defaultJSON, version string) {
 	js, jsonStr := defaultJS, defaultJSON
 	if len(sbc.JS) > 0 && len(sbc.JSON) > 0 {
-		js = sbc.JS[0]
-		jsonStr = sbc.JSON[0]
+		js = sbc.JS
+		jsonStr = sbc.JSON
 	}
 	f := newSingboxFile(SingboxName+"-"+version, js, jsonStr)
 	if err := f.updateSubStoreFile(); err != nil {

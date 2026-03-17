@@ -6,9 +6,9 @@ import (
 )
 
 type SingBoxConfig struct {
-	Version string   `yaml:"version"`
-	JSON    []string `yaml:"json"`
-	JS      []string `yaml:"js"`
+	Version string `yaml:"version"`
+	JSON    string `yaml:"json"`
+	JS      string `yaml:"js"`
 }
 
 // SubProcessConfig sub 订阅的操作配置。

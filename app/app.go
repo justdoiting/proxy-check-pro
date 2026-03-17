@@ -76,6 +76,11 @@ func (app *App) Initialize() error {
 		return fmt.Errorf("初始化配置文件路径失败: %w", err)
 	}
 
+	// 迁移旧配置文件
+	if err := app.migrateConfig(); err != nil {
+		slog.Warn(fmt.Sprintf("Singbox 配置迁移失败，跳过迁移继续加载: %v", err))
+	}
+
 	// 加载配置文件
 	if err := app.loadConfig(); err != nil {
 		return fmt.Errorf("加载配置文件失败: %w", err)

@@ -156,18 +156,14 @@ mihomo-overwrite-url: http://127.0.0.1:8199/Sinspired_Rules_CDN.yaml
 # singbox 最新版
 singbox-latest:
   version: 1.12
-  json:
-    - "https://raw.githubusercontent.com/sinspired/sub-store-template/main/1.12.x/sing-box.json"
-  js:
-    - "https://raw.githubusercontent.com/sinspired/sub-store-template/main/1.12.x/sing-box.js"
+  json: "https://raw.githubusercontent.com/sinspired/sub-store-template/main/1.12.x/sing-box.json"
+  js: "https://raw.githubusercontent.com/sinspired/sub-store-template/main/1.12.x/sing-box.js"
 
 # singbox 1.11 版本配置（iOS 兼容）
 singbox-old:
   version: 1.11
-  json:
-    - "https://raw.githubusercontent.com/sinspired/sub-store-template/main/1.11.x/sing-box.json"
-  js:
-    - "https://raw.githubusercontent.com/sinspired/sub-store-template/main/1.11.x/sing-box.js"
+  json: "https://raw.githubusercontent.com/sinspired/sub-store-template/main/1.11.x/sing-box.json"
+  js: "https://raw.githubusercontent.com/sinspired/sub-store-template/main/1.11.x/sing-box.js"
 
 # 以下配置查看sub-store相关的教程：https://hub.docker.com/r/xream/sub-store
 # sub-store 节点操作，针对默认的 sub 订阅
