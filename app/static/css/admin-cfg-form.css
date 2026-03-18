@@ -151,8 +151,9 @@
 .cfg-tab-bar {
   display: flex;
   gap: 4px;
-  margin: 2px -12px 0;
-  padding: 6px 12px 8px;
+  margin: 0px -12px 0;
+  padding: 6px 12px 6px;
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
   scrollbar-width: none;
@@ -359,7 +360,7 @@
   border-bottom: none;
 }
 .cfg-field:hover {
-  background: color-mix(in srgb, var(--accent) 4.5%, transparent);
+  background: color-mix(in srgb, var(--bg-hover) 80%, transparent);
   margin: 0 -2px;
 }
 

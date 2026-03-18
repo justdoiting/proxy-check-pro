@@ -1,8 +1,9 @@
 :root {
   -webkit-text-size-adjust: 100%;
-  --bg: #f6f7f9;
+  --bg: #ffffff;
   --fg: #111;
   --card: #fff;
+  --card-shadow:#8e8e8e;
   --border: rgba(0, 0, 0, 0.06);
   --accent: #0ea5a0;
   --accent-light: rgba(14, 165, 160, 0.6);
@@ -20,6 +21,7 @@
 
   /* 密码输入框背景 */
   --input-bg: rgba(236, 232, 224, 0.2);
+  --bg-hover:  rgba(236, 232, 224, 0.6);
 
   /* --logs-bg: rgba(236, 232, 224, 0.2); */
   --logs-bg: white;
@@ -63,6 +65,7 @@
   --bg: #121316;
   --fg: #e6e6e6;
   --card: #18191b;
+  --card-shadow:#001817;
   --border: rgba(255, 255, 255, 0.06);
   --accent: #0ea5a0;
   --accent-light: rgba(14, 165, 160, 0.6);
@@ -74,6 +77,7 @@
   --prepare: rgb(1, 136, 194);
 
   --input-bg: rgba(0, 0, 0, 0.2);
+  --bg-hover: #04585540;
   --logs-bg: rgba(0, 0, 0, 0.2);
   --editor-bg: rgba(23, 23, 23, 0.2);
   --content-bg: rgba(23, 23, 23, 0.2);
@@ -415,6 +419,8 @@ header {
   border: 1px solid var(--border);
   padding: 12px;
   overflow: hidden;
+  box-shadow: 4px 4px 10px
+    color-mix(in srgb, var(--card-shadow) 15%, transparent);
 }
 
 /* 主体布局 */
@@ -509,7 +515,7 @@ main {
   margin: 0;
   /* ❌ 去掉 auto，避免居中 */
   padding: 10px 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   font-size: 14px;
   transition: background-color 0.12s ease, transform 0.08s ease;
   cursor: pointer;
@@ -1138,7 +1144,8 @@ main {
 /* 交互标题栏 */
 .summary-toggle-header {
   opacity: 0.8;
-  padding: 10px 16px;
+  margin-top: 0px;
+  padding: 7px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1148,7 +1155,7 @@ main {
 }
 
 .summary-toggle-header:hover {
-  background: rgba(14, 165, 160, 0.05);
+  background: var(--bg-hover);
 }
 
 .summary-title {
@@ -2419,7 +2426,6 @@ main {
     height: 24px;
   }
 
-  
   .idle {
     width: 100%; /* 跟随 project-name 宽度 */
     text-align: justify; /* ← 两端对齐 */
