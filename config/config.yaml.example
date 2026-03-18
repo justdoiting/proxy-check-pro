@@ -230,8 +230,8 @@ isp-check: false
 media-check: true
 platforms:
   - iprisk
-  - openai
-  - gemini
+  # - openai
+  # - gemini
   - youtube
   # - tiktok
   # - netflix
