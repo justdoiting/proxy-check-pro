@@ -359,7 +359,7 @@ func mergeSubProcess(existing []json.RawMessage, scpOps []any, cfg config.SubPro
 			CustomName: "注入订阅流量信息节点",
 			ID:         newOperatorID(), // 带 SCP ID，下次由 isSubInfoScpOperator 识别保留
 			Args: Args{
-				"content": defaultSubInfoURL,
+				"content": WarpURL(defaultSubInfoURL, IsGithubProxy) ,
 				"mode":    "link",
 				"arguments": Args{
 					"showLastUpdate": "true",
