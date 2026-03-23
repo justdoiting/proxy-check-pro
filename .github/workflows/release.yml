@@ -140,6 +140,8 @@ jobs:
               - 节点状态通知添加"消耗流量"数据
               - 支持 HTTP/2, 优化连接复用逻辑
               - 支持单独设置媒体解锁超时
+              - 提高订阅解析成功率，支持更多非标格式
+              - 优化内存占用，优化主动内存回收
               - 错误修复和优化
               
             🔗 [查看详情](https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }})
