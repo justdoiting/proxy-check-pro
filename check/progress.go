@@ -10,8 +10,8 @@ import (
 	"github.com/sinspired/subs-check-pro/config"
 )
 
-// 用于 UI 显示当前阶段名称
-var currentStepName atomic.Value
+// CurrentStepName 用于 UI 显示当前阶段名称
+var CurrentStepName atomic.Value
 
 // ProgressWeight 不同检测阶段的进度权重
 type ProgressWeight struct {
@@ -58,9 +58,9 @@ func NewProgressTracker(total int) *ProgressTracker {
 	// 默认阶段名（根据配置）
 	mode := config.GlobalConfig.ProgressMode
 	if mode == "stage" {
-		currentStepName.Store("测活")
+		CurrentStepName.Store("测活")
 	} else {
-		currentStepName.Store("进度")
+		CurrentStepName.Store("进度")
 	}
 
 	return pt
@@ -263,12 +263,12 @@ func (pt *ProgressTracker) refreshStage() {
 
 	// 处理停止信号下的显示文字
 	if Successlimited.Load() {
-		currentStepName.Store("收尾")
+		CurrentStepName.Store("收尾")
 	}
 
 	switch stage {
 	case 0: // 存活检测阶段
-		currentStepName.Store("测活")
+		CurrentStepName.Store("测活")
 		total := uint32(pt.totalJobs.Load())
 		// 如果在测活阶段就停止了（比如强制停止），修正总数显示
 		if ForceClose.Load() || Successlimited.Load() {
@@ -287,7 +287,7 @@ func (pt *ProgressTracker) refreshStage() {
 		Progress.Store(done)
 
 	case 1: // 测速阶段
-		currentStepName.Store("测速")
+		CurrentStepName.Store("测速")
 		// 分母：上一阶段(Alive)的成功数
 		total := uint32(pt.aliveSuccess.Load())
 		if total == 0 {
@@ -305,7 +305,7 @@ func (pt *ProgressTracker) refreshStage() {
 		Progress.Store(done)
 
 	case 2: // 媒体检测阶段
-		currentStepName.Store("媒体")
+		CurrentStepName.Store("媒体")
 		// 分母：上一阶段的成功数
 		var base int32
 		if speedON {
@@ -356,7 +356,7 @@ func (pc *ProxyChecker) renderProgressString() string {
 	step := ""
 
 	// 获取阶段名称
-	if s, ok := currentStepName.Load().(string); ok {
+	if s, ok := CurrentStepName.Load().(string); ok {
 		step = s
 	}
 

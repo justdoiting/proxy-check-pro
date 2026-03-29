@@ -748,6 +748,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
 
           // updateProgress 会接管 StatusEl 的倒计时显示
           updateProgress(
+            d.stepName || "进度",
             d.proxyCount || 0,
             d.progress || 0,
             d.available || 0,
@@ -789,6 +790,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
         }
 
         updateProgress(
+          d.stepName || "进度",
           d.proxyCount || 0,
           d.progress || 0,
           d.available || 0,
@@ -900,6 +902,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
   }
 
   function updateProgress(
+    stepName,
     total,
     processed,
     available,
@@ -941,6 +944,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
     const pct = total > 0 ? Math.min(100, (processed / total) * 100) : 0
     if (els.progressBar) els.progressBar.value = pct
     if (els.progressText) els.progressText.textContent = `${processed}/${total}`
+    if (els.progressPercentTitle) els.progressPercentTitle.textContent = stepName
     if (els.progressPercent) els.progressPercent.textContent = pct.toFixed(1) + '%'
 
     if (els.successTitle) els.successTitle.textContent = '可用：'

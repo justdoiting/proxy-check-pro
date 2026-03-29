@@ -341,6 +341,7 @@ func (app *App) getStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"checking":          app.checking.Load(),
+		"stepName":          check.CurrentStepName.Load(),
 		"proxyCount":        check.ProxyCount.Load(),
 		"available":         check.Available.Load(),
 		"progress":          check.Progress.Load(),
