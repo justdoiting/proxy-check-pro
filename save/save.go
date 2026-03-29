@@ -123,7 +123,7 @@ func (cs *ConfigSaver) categorizeProxies() {
 // saveCategory 保存单个类别的代理
 func (cs *ConfigSaver) saveCategory(category ProxyCategory) error {
 	if len(category.Proxies) == 0 {
-		slog.Warn("节点为空，跳过保存","文件", category.Name,"保存方法" ,config.GlobalConfig.SaveMethod)
+		slog.Warn("节点为空，跳过保存", "文件", category.Name, "保存方法", config.GlobalConfig.SaveMethod)
 		return nil
 	}
 	if category.Name == "history.yaml" {
@@ -177,41 +177,52 @@ func (cs *ConfigSaver) saveCategory(category ProxyCategory) error {
 			return fmt.Errorf("保存 %s 失败: %w", category.Name, err)
 		}
 		// 只在 all.yaml 和 local时，更新substore
-		if config.GlobalConfig.SaveMethod == "local" && config.GlobalConfig.SubStorePort != "" && assets.IsSubStoreRunning.Load(){
+		if config.GlobalConfig.SaveMethod == "local" && config.GlobalConfig.SubStorePort != "" && assets.IsSubStoreRunning.Load() {
 			utils.UpdateSubStore(yamlData)
 		}
 		return nil
 	}
-	if category.Name == "mihomo.yaml" {
-		if config.GlobalConfig.SubStorePort == "" {
-			yamlData, err := buildMihomoYAML(category.Proxies)
-			if err != nil {
-				return fmt.Errorf("序列化yaml %s 失败: %w", category.Name, err)
-			}
-			if err := cs.saveMethod(yamlData, category.Name); err != nil {
-				return fmt.Errorf("保存 %s 失败: %w", category.Name, err)
-			}
-			return nil
-		}
-
-		resp, err := http.Get(fmt.Sprintf("%s/api/file/%s", utils.BaseURL, utils.MihomoName))
+	// 提取本地生成逻辑
+	fallback := func() error {
+		yamlData, err := buildMihomoYAML(category.Proxies)
 		if err != nil {
-			return fmt.Errorf("获取mihomo file请求失败: %w", err)
+			return fmt.Errorf("序列化yaml %s 失败: %w", category.Name, err)
 		}
-		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("读取mihomo file失败: %w", err)
-		}
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("获取mihomo file失败, 状态码: %d, 错误信息: %s", resp.StatusCode, body)
-		}
-		if err := cs.saveMethod(body, category.Name); err != nil {
+		if err := cs.saveMethod(yamlData, category.Name); err != nil {
 			return fmt.Errorf("保存 %s 失败: %w", category.Name, err)
 		}
 		return nil
 	}
-	if category.Name == "base64.txt" && config.GlobalConfig.SubStorePort != "" && assets.IsSubStoreRunning.Load(){
+
+	if category.Name == "mihomo.yaml" {
+		if config.GlobalConfig.SubStorePort == "" {
+			return fallback()
+		}
+
+		resp, err := http.Get(fmt.Sprintf("%s/api/file/%s", utils.BaseURL, utils.MihomoName))
+		if err != nil {
+			slog.Warn("远程获取失败，回退到本地生成", "错误", err)
+			return fallback()
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			slog.Warn("读取远程响应失败，回退到本地生成", "错误", err)
+			return fallback()
+		}
+		if resp.StatusCode != http.StatusOK {
+			slog.Warn("远程状态码异常，回退到本地生成", "状态码", resp.StatusCode)
+			return fallback()
+		}
+
+		if err := cs.saveMethod(body, category.Name); err != nil {
+			slog.Warn("保存远程文件失败，回退到本地生成", "错误", err)
+			return fallback()
+		}
+		return nil
+	}
+	if category.Name == "base64.txt" && config.GlobalConfig.SubStorePort != "" && assets.IsSubStoreRunning.Load() {
 		// http://127.0.0.1:8299/download/sub?target=V2Ray
 		resp, err := http.Get(fmt.Sprintf("%s/download/%s?target=V2Ray", utils.BaseURL, utils.SubName))
 		if err != nil {
