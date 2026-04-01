@@ -42,95 +42,6 @@ type NotifyRequest struct {
 	Format string `json:"format"` // text、markdown或html
 }
 
-// newClient 创建 HTTP 客户端，支持可选代理
-func newClient(proxy string) (*http.Client, error) {
-	tr := &http.Transport{}
-	if proxy != "" {
-		pu, err := url.Parse(proxy)
-		if err != nil {
-			return nil, fmt.Errorf("代理地址无效: %w", err)
-		}
-		tr.Proxy = http.ProxyURL(pu)
-	}
-	return &http.Client{Transport: tr, Timeout: notifyTimeout}, nil
-}
-
-// Notify 发送单次通知请求
-func Notify(req NotifyRequest, proxy string) error {
-	body, err := json.Marshal(req)
-	if err != nil {
-		return fmt.Errorf("构建请求体失败: %w", err)
-	}
-
-	client, err := newClient(proxy)
-	if err != nil {
-		return err
-	}
-
-	apiServer := config.GlobalConfig.AppriseAPIServer
-	if apiServer == "" {
-		return fmt.Errorf("通知服务器地址未配置")
-	}
-
-	httpReq, err := http.NewRequestWithContext(
-		context.Background(),
-		http.MethodPost,
-		apiServer,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return fmt.Errorf("构建请求失败: %w", err)
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(httpReq)
-	if err != nil {
-		return fmt.Errorf("发送请求失败: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bs, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("通知失败, 状态码: %d, 响应: %s", resp.StatusCode, strings.TrimSpace(string(bs)))
-	}
-
-	return nil
-}
-
-// sendWithRetry 带重试逻辑的通知发送
-func sendWithRetry(req NotifyRequest, name string) {
-	proxies := []string{"", ""} // 直连优先尝试 2 次
-
-	if IsSysProxyAvailable {
-		proxies = append(proxies, config.GlobalConfig.SystemProxy)
-	}
-	if GetSysProxy() {
-		proxies = append(proxies, config.GlobalConfig.SystemProxy)
-	} else {
-		proxies = append(proxies, "")
-	}
-	if FallbackProxy != "" {
-		proxies = append(proxies, FallbackProxy)
-	}
-
-	var lastErr error
-	for _, p := range proxies {
-		if err := Notify(req, p); err == nil {
-			if p != "" {
-				slog.Info("通知发送成功", "目标", name, "方法", "代理")
-			} else {
-				slog.Info("通知发送成功", "目标", name)
-			}
-			return
-		} else {
-			lastErr = err
-		}
-	}
-	if lastErr != nil {
-		slog.Error("通知发送最终失败", "目标", name, "错误", lastErr)
-	}
-}
-
 // decorateURL 根据服务类型和通知类型装饰 URL
 func decorateURL(raw string, kind NotifyKind, downloadURL string) string {
 	// 由于通知地址不是标准URL，采用自定义解析逻辑
@@ -233,6 +144,101 @@ func decorateURL(raw string, kind NotifyKind, downloadURL string) string {
 	return finalURL
 }
 
+// newClient 创建 HTTP 客户端，支持可选代理
+func newClient(proxy string) (*http.Client, error) {
+	tr := &http.Transport{}
+	if proxy != "" {
+		pu, err := url.Parse(proxy)
+		if err != nil {
+			return nil, fmt.Errorf("代理地址无效: %w", err)
+		}
+		tr.Proxy = http.ProxyURL(pu)
+	}
+	return &http.Client{Transport: tr, Timeout: notifyTimeout}, nil
+}
+
+// Notify 发送单次通知请求
+func Notify(req NotifyRequest, proxy string) error {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("构建请求体失败: %w", err)
+	}
+
+	client, err := newClient(proxy)
+	if err != nil {
+		return err
+	}
+
+	apiServer := config.GlobalConfig.AppriseAPIServer
+	if apiServer == "" {
+		return fmt.Errorf("通知服务器地址未配置")
+	}
+
+	httpReq, err := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodPost,
+		apiServer,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return fmt.Errorf("构建请求失败: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("发送请求失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bs, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("通知失败, 状态码: %d, 响应: %s", resp.StatusCode, strings.TrimSpace(string(bs)))
+	}
+
+	return nil
+}
+
+// buildProxyList 构建代理尝试列表（只调用一次）
+func buildProxyList() []string {
+	proxies := []string{"", ""} // 直连优先尝试 2 次
+
+	if IsSysProxyAvailable {
+		proxies = append(proxies, config.GlobalConfig.SystemProxy)
+	}
+	if GetSysProxy() {
+		proxies = append(proxies, config.GlobalConfig.SystemProxy)
+	} else {
+		proxies = append(proxies, "")
+	}
+	if FallbackProxy != "" {
+		proxies = append(proxies, FallbackProxy)
+	}
+
+	return proxies
+}
+
+// sendWithRetry 带重试逻辑的通知发送
+func sendWithRetry(req NotifyRequest, name string, proxies []string) {
+	var lastErr error
+	for _, p := range proxies {
+		if err := Notify(req, p); err == nil {
+			if p != "" {
+				slog.Info("通知发送成功", "目标", name, "方法", "代理")
+			} else {
+				slog.Info("通知发送成功", "目标", name)
+			}
+			return
+		} else {
+			lastErr = err
+		}
+	}
+	if lastErr != nil {
+		slog.Error("通知发送最终失败", "目标", name, "错误", lastErr)
+	}
+}
+
 // broadcastNotify 广播通知到所有接收者
 func broadcastNotify(kind NotifyKind, title, body, downloadURL string) {
 	apiServer := config.GlobalConfig.AppriseAPIServer
@@ -249,6 +255,9 @@ func broadcastNotify(kind NotifyKind, title, body, downloadURL string) {
 		format = "markdown"
 	}
 
+	// 只构建一次 proxy 列表
+	proxies := buildProxyList()
+
 	for _, u := range config.GlobalConfig.RecipientURL {
 		name := strings.SplitN(u, "://", 2)[0]
 		if strings.Contains(name, "tgram") && kind == NotifyNewRelease {
@@ -261,7 +270,7 @@ func broadcastNotify(kind NotifyKind, title, body, downloadURL string) {
 			Title:  title,
 			Format: format,
 		}
-		sendWithRetry(req, name)
+		sendWithRetry(req, name, proxies)
 	}
 }
 
