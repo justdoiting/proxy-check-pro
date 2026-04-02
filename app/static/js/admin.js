@@ -2866,6 +2866,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
           }
 
           setLink('commonSub-item', '/download/sub')
+          setLink('v2raySub-item', '/download/sub?target=V2Ray')
           setLink('mihomoSub-item', '/api/file/mihomo')
 
           const oldItem = document.getElementById('singboxOldSub-item')
