@@ -754,6 +754,7 @@ func updateSub(s sub) error {
 	}
 
 	patch := struct {
+		Icon        string `json:"icon,omitempty"`
 		Content     string `json:"content"`
 		SubUserInfo string `json:"subUserinfo,omitempty"`
 		Process     []any  `json:"process"`
