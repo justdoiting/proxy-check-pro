@@ -102,14 +102,15 @@ func JoinURL(parts ...string) string {
 		return ""
 	}
 
-	out := strings.TrimRight(parts[0], "/")
+	var out strings.Builder
+	out.WriteString(strings.TrimRight(parts[0], "/"))
 
 	for _, p := range parts[1:] {
 		if p == "" {
 			continue
 		}
-		out += "/" + strings.Trim(p, "/")
+		out.WriteString("/" + strings.Trim(p, "/"))
 	}
 
-	return out
+	return out.String()
 }

@@ -88,10 +88,7 @@ func SmartShuffleByServer(items []map[string]any, cfg ShuffleConfig) {
 				bestJ, bestScore := -1, 2.0 // 2.0 大于任何可能的相似度(最大1.0)
 
 				// 向后搜索合适的候选者 j 来替换 i+1
-				searchEnd := i + 2 + cfg.ScanLimit
-				if searchEnd > n {
-					searchEnd = n
-				}
+				searchEnd := min(i+2+cfg.ScanLimit, n)
 
 				for j := i + 2; j < searchEnd; j++ {
 					mj := metas[j]
@@ -165,7 +162,7 @@ func same24(a, b serverMeta) bool {
 func similarity(a, b serverMeta) float64 {
 	if a.isIPv4 && b.isIPv4 {
 		eq := 0
-		for i := 0; i < 4; i++ {
+		for i := range 4 {
 			if a.octets[i] == b.octets[i] {
 				eq++
 			} else {

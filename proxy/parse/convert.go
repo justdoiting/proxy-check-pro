@@ -367,7 +367,7 @@ func ParseWireGuardURI(link string) map[string]any {
 
 	if res := q.Get("reserved"); res != "" {
 		var reserved []int
-		for _, p := range strings.Split(res, ",") {
+		for p := range strings.SplitSeq(res, ",") {
 			// 处理可能的 URL 编码
 			if i, err := strconv.Atoi(strings.TrimSpace(p)); err == nil {
 				reserved = append(reserved, i)
@@ -409,7 +409,7 @@ func ParseSSRURI(link string) map[string]any {
 	}
 
 	if len(parts) > 1 {
-		for _, pair := range strings.Split(parts[1], "&") {
+		for pair := range strings.SplitSeq(parts[1], "&") {
 			kv := strings.SplitN(pair, "=", 2)
 			if len(kv) == 2 {
 				val := string(TryDecodeBase64([]byte(kv[1])))

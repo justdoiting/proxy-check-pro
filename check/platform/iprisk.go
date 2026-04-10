@@ -31,12 +31,12 @@ func CheckIPRisk(httpClient *http.Client, ip string) (string, error) {
 			return "", err
 		}
 		bodyStr := string(body)
-		apiIndex := strings.Index(bodyStr, "IP Fraud Risk API")
-		if apiIndex == -1 {
+		_, after, ok := strings.Cut(bodyStr, "IP Fraud Risk API")
+		if !ok {
 			return "", fmt.Errorf("未找到IP Fraud Risk API")
 		}
 		// 从 "IP Fraud Risk API" 后的内容开始
-		contentAfterAPI := bodyStr[apiIndex+len("IP Fraud Risk API"):]
+		contentAfterAPI := after
 		// 按行分割
 		lines := strings.Split(contentAfterAPI, "\n")
 

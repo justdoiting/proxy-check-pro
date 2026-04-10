@@ -118,7 +118,7 @@ func (w *WebDAVUploader) validateInput(yamlData []byte, filename string) error {
 func (w *WebDAVUploader) uploadWithRetry(yamlData []byte, filename string) error {
 	var lastErr error
 
-	for attempt := 0; attempt < webdavMaxRetries; attempt++ {
+	for attempt := range webdavMaxRetries {
 		if err := w.doUpload(yamlData, filename); err != nil {
 			lastErr = err
 			slog.Error(fmt.Sprintf("webdav上传失败(尝试 %d/%d) %v", attempt+1, webdavMaxRetries, err))

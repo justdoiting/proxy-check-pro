@@ -42,7 +42,7 @@ func CheckDisney(httpClient *http.Client) (bool, error) {
 		return false, err
 	}
 
-	var assertionResp map[string]interface{}
+	var assertionResp map[string]any
 	if err := json.Unmarshal(body, &assertionResp); err != nil {
 		return false, err
 	}
@@ -77,7 +77,7 @@ func CheckDisney(httpClient *http.Client) (bool, error) {
 		return false, err
 	}
 
-	var tokenResp map[string]interface{}
+	var tokenResp map[string]any
 	if err := json.Unmarshal(body, &tokenResp); err != nil {
 		return false, err
 	}
@@ -116,23 +116,23 @@ func CheckDisney(httpClient *http.Client) (bool, error) {
 		return false, err
 	}
 
-	var gqlResp map[string]interface{}
+	var gqlResp map[string]any
 	if err := json.Unmarshal(body, &gqlResp); err != nil {
 		return false, err
 	}
 
 	// 检查区域信息
-	extensions, ok := gqlResp["extensions"].(map[string]interface{})
+	extensions, ok := gqlResp["extensions"].(map[string]any)
 	if !ok {
 		return false, nil
 	}
 
-	sdk, ok := extensions["sdk"].(map[string]interface{})
+	sdk, ok := extensions["sdk"].(map[string]any)
 	if !ok {
 		return false, nil
 	}
 
-	session, ok := sdk["session"].(map[string]interface{})
+	session, ok := sdk["session"].(map[string]any)
 	if !ok {
 		return false, nil
 	}

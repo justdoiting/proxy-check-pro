@@ -136,7 +136,7 @@ func (g *GistUploader) validateInput(yamlData []byte, filename string) error {
 func (g *GistUploader) uploadWithRetry(jsonData []byte, filename string) error {
 	var lastErr error
 
-	for attempt := 0; attempt < gistMaxRetries; attempt++ {
+	for attempt := range gistMaxRetries {
 		if err := g.doUpload(jsonData); err != nil {
 			lastErr = err
 			slog.Error(fmt.Sprintf("gist上传失败(尝试 %d/%d) %v", attempt+1, gistMaxRetries, err))

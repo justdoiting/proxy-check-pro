@@ -122,7 +122,7 @@ func (r *R2Uploader) validateInput(yamlData []byte, filename string) error {
 func (r *R2Uploader) uploadWithRetry(jsonData []byte, filename string) error {
 	var lastErr error
 
-	for attempt := 0; attempt < maxRetries; attempt++ {
+	for attempt := range maxRetries {
 		if err := r.doUpload(jsonData); err != nil {
 			lastErr = err
 			slog.Error(fmt.Sprintf("R2上传失败(尝试 %d/%d) %v", attempt+1, maxRetries, err))

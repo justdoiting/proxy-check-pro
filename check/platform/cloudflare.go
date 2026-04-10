@@ -176,12 +176,12 @@ func FetchCFTrace(httpClient *http.Client, ctx context.Context, baseURL string) 
 	}
 
 	var loc, ip string
-	for _, line := range strings.Split(string(body), "\n") {
+	for line := range strings.SplitSeq(string(body), "\n") {
 		if after, ok := strings.CutPrefix(line, "loc="); ok {
 			loc = after
 		}
-		if strings.HasPrefix(line, "ip=") {
-			ip = strings.TrimPrefix(line, "ip=")
+		if after, ok := strings.CutPrefix(line, "ip="); ok {
+			ip = after
 		}
 	}
 	return loc, ip

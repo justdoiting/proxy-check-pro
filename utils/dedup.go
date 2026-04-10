@@ -208,8 +208,8 @@ func cleanDomain(s string) string {
 
 // cleanPath 移除 ? 及其后面的 Query 参数
 func cleanPath(path string) string {
-	if idx := strings.Index(path, "?"); idx != -1 {
-		return path[:idx]
+	if before, _, ok := strings.Cut(path, "?"); ok {
+		return before
 	}
 	return path
 }

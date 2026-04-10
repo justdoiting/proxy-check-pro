@@ -148,7 +148,7 @@ func patchXhttpOpts(nodes []map[string]any, rawData []byte) {
 	// 构建 server|port|uuid → 原始 URL 的查找表
 	// 只处理 xhttp vless，避免无谓开销
 	urlIndex := make(map[string]url.Values)
-	for _, line := range bytes.Split(rawData, []byte("\n")) {
+	for line := range bytes.SplitSeq(rawData, []byte("\n")) {
 		s := strings.TrimSpace(string(line))
 		if !strings.HasPrefix(s, "vless://") {
 			continue

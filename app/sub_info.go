@@ -3,6 +3,7 @@ package app
 import (
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -246,24 +247,24 @@ func expandCronField(field string, minVal, maxVal int) []int {
 	}
 
 	var result []int
-	for _, part := range strings.Split(field, ",") {
+	for part := range strings.SplitSeq(field, ",") {
 		part = strings.TrimSpace(part)
 		if part == "" {
 			continue
 		}
 
-		if idx := strings.Index(part, "/"); idx != -1 {
+		if before, after, ok := strings.Cut(part, "/"); ok {
 			// 步进：*/step 或 a-b/step
-			step, err := strconv.Atoi(part[idx+1:])
+			step, err := strconv.Atoi(after)
 			if err != nil || step <= 0 {
 				continue
 			}
-			rangeStr := part[:idx]
+			rangeStr := before
 			start, end := minVal, maxVal
 			if rangeStr != "*" && rangeStr != "?" {
-				if dashIdx := strings.Index(rangeStr, "-"); dashIdx != -1 {
-					a, e1 := strconv.Atoi(rangeStr[:dashIdx])
-					b, e2 := strconv.Atoi(rangeStr[dashIdx+1:])
+				if before, after, ok := strings.Cut(rangeStr, "-"); ok {
+					a, e1 := strconv.Atoi(before)
+					b, e2 := strconv.Atoi(after)
 					if e1 == nil && e2 == nil {
 						start, end = a, b
 					}
@@ -277,10 +278,10 @@ func expandCronField(field string, minVal, maxVal int) []int {
 			continue
 		}
 
-		if dashIdx := strings.Index(part, "-"); dashIdx != -1 {
+		if before, after, ok := strings.Cut(part, "-"); ok {
 			// 范围：a-b
-			a, e1 := strconv.Atoi(part[:dashIdx])
-			b, e2 := strconv.Atoi(part[dashIdx+1:])
+			a, e1 := strconv.Atoi(before)
+			b, e2 := strconv.Atoi(after)
 			if e1 == nil && e2 == nil {
 				for v := a; v <= b; v++ {
 					result = append(result, v)
@@ -299,12 +300,7 @@ func expandCronField(field string, minVal, maxVal int) []int {
 
 // intIn 判断 v 是否存在于 list 中。
 func intIn(v int, list []int) bool {
-	for _, x := range list {
-		if x == v {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(list, v)
 }
 
 // loadReportFallback 读取最新分析报告，提取流量与结束时间。

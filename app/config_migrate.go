@@ -115,11 +115,11 @@ func rewriteSingboxBlock(content, blockKey string, v1 singBoxConfigV1) string {
 		// 找到 json: 或 js: 且值为空（旧列表写法的标志）
 		var fieldValue string
 		var matched bool
-		if strings.HasPrefix(trimmed, "json:") {
-			fieldValue = strings.TrimSpace(strings.TrimPrefix(trimmed, "json:"))
+		if after, ok := strings.CutPrefix(trimmed, "json:"); ok {
+			fieldValue = strings.TrimSpace(after)
 			matched = fieldValue == "" && len(v1.JSON) > 0
-		} else if strings.HasPrefix(trimmed, "js:") {
-			fieldValue = strings.TrimSpace(strings.TrimPrefix(trimmed, "js:"))
+		} else if after, ok := strings.CutPrefix(trimmed, "js:"); ok {
+			fieldValue = strings.TrimSpace(after)
 			matched = fieldValue == "" && len(v1.JS) > 0
 		}
 
@@ -130,8 +130,8 @@ func rewriteSingboxBlock(content, blockKey string, v1 singBoxConfigV1) string {
 			for j < len(lines) {
 				itemLine := lines[j]
 				itemTrimmed := strings.TrimSpace(itemLine)
-				if strings.HasPrefix(itemTrimmed, "- ") {
-					listItems = append(listItems, strings.TrimPrefix(itemTrimmed, "- "))
+				if after, ok := strings.CutPrefix(itemTrimmed, "- "); ok {
+					listItems = append(listItems, after)
 					j++
 				} else {
 					break

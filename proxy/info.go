@@ -182,12 +182,12 @@ func GetCFProxy(httpClient *http.Client) (loc string, ip string) {
 	}
 
 	// Parse the response text to find loc=XX
-	for _, line := range strings.Split(string(body), "\n") {
-		if strings.HasPrefix(line, "loc=") {
-			loc = strings.TrimPrefix(line, "loc=")
+	for line := range strings.SplitSeq(string(body), "\n") {
+		if after, ok := strings.CutPrefix(line, "loc="); ok {
+			loc = after
 		}
-		if strings.HasPrefix(line, "ip=") {
-			ip = strings.TrimPrefix(line, "ip=")
+		if after, ok := strings.CutPrefix(line, "ip="); ok {
+			ip = after
 		}
 	}
 	return
