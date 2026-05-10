@@ -121,36 +121,70 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
-          provenance: mode=max                                 # ← 完整构建来源
-          sbom: true                                           # ← 软件物料清单
+          provenance: mode=max # ← 完整构建来源
+          sbom: true # ← 软件物料清单
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   notify:
-    permissions: {}     # 不需要任何权限
-    # Telegram 通知
     runs-on: ubuntu-latest
-    needs: [releaser, docker] # 依赖前两个 job，确保成功后运行
+    needs: [releaser, docker]
+
+    permissions:
+      contents: read
+
     steps:
-      - name: Determine Notification Title
-        id: meta
+      - name: Get release notes
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ "${{ github.ref_name }}" =~ (beta|alpha|rc|dev|snapshot|test) ]]; then
-            echo "title=🚧 *subs-check-pro 预发布*" >> $GITHUB_OUTPUT
-          else
-            echo "title=🚀 *subs-check-pro 更新*" >> $GITHUB_OUTPUT
-          fi
+          {
+            echo 'notes<<EOF'
+            gh release view "${{ github.ref_name }}" --json body -q .body
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Send Telegram message on push
-        uses: appleboy/telegram-action@master
+      - name: Send notifications
+        uses: sinspired/multi-release-notify@v1
         with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          format: markdown
-          message: |
-            ${{ steps.meta.outputs.title }}
+          summary: "由于原仓库触发审查，本版本合并精简了历史提交，删除部分敏感内容。"
+          # release_notes: ${{ steps.release.outputs.notes }}
+          release_notes: |
+            ## 🚀 发布说明
 
-            版本: `${{ github.ref_name }}`
-            项目: `${{ github.repository }}`
-              
-            🔗 [查看详情](https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }})
+            ### ✨ 新功能
+            1. **新增 Copilot 解锁检测**，支持 GitHub Copilot 可用性检测
+            2. **新增 URL 列表拖拽排序**，提升订阅管理体验
+            3. **新增媒体检测超时设置项**，支持 WebUI 配置检测超时时间
+            4. **新增协议筛选与平台筛选一键重置按钮**
+            5. **新增小屏日志折叠/展开功能**，自动保存折叠状态
+
+            ### ⚡ 性能优化
+            6. **支持 HTTP/2 及连接复用**，优化通知发送效率
+            7. **重构订阅获取与解析逻辑**，提高解析成功率，支持 Markdown 正则解析
+            8. **优化内存管理**，修复历史遗留内存泄漏问题，主动内存回收可配置
+            9. **优化 ETA 算法与下载测速流量计算逻辑**
+            10. **优化 Gemini 检测**，正确识别欧盟政策地区，新增 HK/MO 支持
+
+            ### 🐛 问题修复
+            11. **修复 sub-store 端口禁用时重载配置导致重启的错误**
+            12. **修复分阶段进度模式下的 UI 显示异常**（已检测数量、进度条强制结束等）
+            13. **修复 GitHub 代理检测**，校验 SHA256，避免虚假代理干扰
+            14. **修复触屏拖拽排序兼容性问题**
+            15. **修复 mihomo 覆写规则中的正则表达式错误**
+
+            ### 🔧 基础设施与依赖更新
+            16. **升级 goreleaser 至 v7**，使用 UPX 压缩编译产物
+            17. **Docker 基础镜像从 Alpine 替换为含 glibc 的镜像**，提高兼容性
+            18. **更新 mihomo → v1.19.23、Node.js → v24.15.0、sub-store → 2.22.21**
+            19. **优化 Docker 构建 CI 流程**，改进二进制文件解压命名规则
+            20. **移除 Git LFS，清理仓库结构**，更新 README 文档
+
+          email_url: ${{ secrets.EMAIL_APPRISE_URL }}
+          telegram_url: ${{ secrets.TELEGRAM_APPRISE_URL }}
+          slack_url: ${{ secrets.DINGTALK_APPRISE_URL }}
+          bark_url: ${{ secrets.BARK_APPRISE_URL }}
+
+          urls: |
+            ntfy://subs-check-pro
