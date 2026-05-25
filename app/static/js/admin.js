@@ -3084,7 +3084,13 @@ import { initQuickPreview } from './cfg-quickpreview.js';
   }
 
   ; (async function bootstrap() {
-    const saved = safeLS('subscheck_api_key')
+    // Issue #1：优先使用 sessionStorage 中由 /gui/enter 写入的本次会话 key，
+    // 其次才使用 localStorage 中显式"记住密钥"保存的 key。
+    // 这样非随机 key 模式下不会跨会话自动登录，除非用户勾选了"记住密钥"。
+    const sessionSaved = (() => { try { return sessionStorage.getItem('subscheck_session_key') } catch { return null } })()
+    const localSaved   = safeLS('subscheck_api_key')
+    const saved = sessionSaved || localSaved
+
     if (saved && els.apiKeyInput) els.apiKeyInput.value = saved
 
     bindControls()
@@ -3121,6 +3127,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
     } catch (e) {
       sessionKey = null
       safeLS('subscheck_api_key', null)
+      try { sessionStorage.removeItem('subscheck_session_key') } catch {}
       showLogin(true)
       setAuthUI(false)
     }
