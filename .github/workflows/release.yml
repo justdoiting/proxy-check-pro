@@ -24,8 +24,10 @@ jobs:
         with:
           go-version: stable
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y upx-ucl
-
+        uses: crazy-max/ghaction-upx@v4
+        with:
+          install-only: true
+          version: latest
       - name: Delete existing release
         run: |
           gh release view ${{ github.ref_name }} &>/dev/null && \
@@ -33,7 +35,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: goreleaser/goreleaser-action@v7
+      - name: Create GitHub release
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: latest
           args: release --clean

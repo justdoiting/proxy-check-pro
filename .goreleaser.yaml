@@ -98,4 +98,15 @@ archives:
 # 压缩可执行文件
 upx:
   - enabled: true
-    compress: "best"
+
+    # Filter by GOOS.
+    goos: [linux, windows]
+
+    # Filter by GOARCH.
+    goarch: [arm64, amd64]
+
+    compress: "6"
+
+    # 关闭 lzma 和 brute！
+    lzma: false
+    brute: false
