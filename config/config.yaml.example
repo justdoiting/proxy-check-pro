@@ -52,7 +52,7 @@ concurrent: 10
 # 保存几个成功的节点，为0代表不限制
 # 如果你的并发数量超过这个参数，那么成功的结果可能会大于这个数值
 # success-limit <= success <= success-limit+concurrent
-success-limit: 36
+success-limit: 25
 
 # 此选项将保存并加载 {上次检测成功的节点} 和 {历次检测成功的节点}
 # 如果为true，则保留之前测试成功的节点
@@ -65,7 +65,7 @@ keep-success-proxies: true
 # 注意: 节点可能被测速测死(暂时或永久), 经过多次测试, 不用怀疑!
 # 强烈建议设置较低的 min-speed, 强烈建议保留 download-timeout 和 download-mb
 # 最低测速结果舍弃(KB/s)
-min-speed: 2345
+min-speed: 1111
 # 下载测试时间(s)(与下载链接大小相关，默认最大测试10s)
 download-timeout: 10
 # 单节点测速下载数据大小(MB)限制，0为不限
@@ -278,7 +278,7 @@ platforms:
 # 非 CF 节点,直接显示: HK²
 # 未获取到位置: HKˣ (使用原方案)
 # 前两位字母是实际浏览网站识别的位置,-US⁰为使用CF CDN服务的网站识别的位置,比如GPT, X等
-enhanced-tag: true
+enhanced-tag: false
 
 # MaxMind 地理数据库路径
 # 如果为空，则使用内置的数据库文件（解压到output目录）
@@ -299,7 +299,7 @@ callback-script: ""
 # 填写搭建的apprise API server 地址
 # 示例：https://notify.xxxx.us.kg/notify
 # 内置apprise服务，不想搭建仅需填写 recipient-url 即可
-apprise-api-server: "https://apprise.linkpc.dpdns.org/notify"
+apprise-api-server: #"https://apprise.linkpc.dpdns.org/notify"
 # 通知渠道
 # 支持100+ 个通知渠道，详细格式请参照 https://github.com/caronc/apprise
 # 格式参考：
@@ -401,7 +401,7 @@ ghproxy-group:
 # 重试次数(获取订阅失败后重试次数)
 sub-urls-retry: 3
 # 网络实在太差，就调高一点，比如 15
-sub-urls-timeout: 10
+sub-urls-timeout: 15
 # 订阅成功率提醒阈值
 # 低于此值会将订阅链接打印出来，用于排查质量差的订阅，使用小于1的小数，比如：0.001
 success-rate: 0
