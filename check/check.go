@@ -260,7 +260,7 @@ func Check() ([]Result, error) {
 	headSize := subWasSuccedLength + historyLength
 	if len(proxies) > headSize {
 		// 假设有 15 个相似的ip
-		calcMinSpacing := max(config.GlobalConfig.Concurrent*5, len(proxies)/15)
+		calcMinSpacing := max(config.GlobalConfig.Concurrent*3, len(proxies)/5)
 
 		// 随机乱序并根据 server 字段打乱节点顺序, 减少测速直接测死的概率
 		cfg := proxyutils.ShuffleConfig{
