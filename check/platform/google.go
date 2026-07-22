@@ -7,14 +7,14 @@ import (
 )
 
 func CheckGoogle(httpClient *http.Client, ctx context.Context) (bool, error) {
-	if success, err := checkGoogleEndpoint(httpClient, ctx, "https://gstatic.com/generate_204", 204); err == nil && success {
-		return checkGoogleEndpoint(httpClient, ctx, "https://www.google.com/generate_204", 204)
+	if success, err := checkGoogleEndpoint(httpClient, ctx, "https://www.bigo.tv", 200); err == nil && success {
+		return checkGoogleEndpoint(httpClient, ctx, "https://porndd.com", 200)
 	}
 	return false, nil
 }
 
 func CheckGstatic(httpClient *http.Client, ctx context.Context) (bool, error) {
-	return checkGoogleEndpoint(httpClient, ctx, "https://gstatic.com/generate_204", 204)
+	return checkGoogleEndpoint(httpClient, ctx, "https://thotslife.com", 200)
 }
 
 // checkGoogleEndpoint 使用 HEAD 方法检查 URL 的状态码。
