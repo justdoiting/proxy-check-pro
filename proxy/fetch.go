@@ -93,10 +93,10 @@ func FetchSubsData(rawURL string) ([]byte, error) {
 
 	// UA 列表池
 	uaList := []string{
-		"mihomo/1.19.27",
-		"clash.meta",
-		"sing-box/1.13.0",
 		convert.RandUserAgent(),
+		"mihomo/1.19.27",
+		"v2ray",
+		"sing-box/1.13.0",
 		"ClashMetaForAndroid/2.11.30",
 	}
 
