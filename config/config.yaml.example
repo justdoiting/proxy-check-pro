@@ -235,6 +235,7 @@ node-loc:
 # false: 保留
 drop-bad-cf-nodes: false
 
+# -----------ISP检测-----------
 # 是否开启出口 ISP 类型检测（机房/住宅/移动/商宽/教育/政府/银行等）
 # 默认关闭，设置为 true 开启
 isp-check: false
@@ -262,6 +263,7 @@ isp-check-api-key-iplocate: ""
 # 免费额度：每天 1500 次（或每月 45000 次）
 isp-check-api-key-ipdata: ""
 
+# -----------媒体检测-----------
 # 是否开启流媒体检测，其中IP欺诈依赖重命名
 media-check: true
 # 流媒体检测超时设置(s)，建议 5-10 秒

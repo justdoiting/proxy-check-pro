@@ -16,15 +16,15 @@ require (
 	github.com/klauspost/compress v1.19.2
 	github.com/lmittmann/tint v1.2.0
 	github.com/mattn/go-colorable v0.1.15
-	github.com/metacubex/mihomo v1.19.29
-	github.com/minio/minio-go/v7 v7.2.1
-	github.com/oschwald/maxminddb-golang/v2 v2.4.1
+	github.com/metacubex/mihomo v1.19.30
+	github.com/minio/minio-go/v7 v7.3.0
+	github.com/oschwald/maxminddb-golang/v2 v2.5.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/samber/lo v1.53.0
 	github.com/shirou/gopsutil/v4 v4.26.7
 	github.com/sinspired/checkip v0.5.1
-	github.com/sinspired/subs-check-pro-webui v0.0.0-20260722093027-fe885518be2e
-	golang.org/x/net v0.57.0
+	github.com/sinspired/subs-check-pro-webui v0.0.0-20260817093422-53e63e629471
+	golang.org/x/net v0.58.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
@@ -44,9 +44,9 @@ require (
 	github.com/coder/websocket v1.8.15 // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
-	github.com/dunglas/httpsfv v1.1.0 // indirect
+	github.com/dunglas/httpsfv v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/ebitengine/purego v0.11.0-alpha.8 // indirect
+	github.com/ebitengine/purego v0.11.0-alpha.9 // indirect
 	github.com/enfein/mieru/v3 v3.35.0 // indirect
 	github.com/ericlagergren/aegis v0.0.0-20250325060835-cd0defd64358 // indirect
 	github.com/ericlagergren/polyval v0.0.0-20230805202542-18692a1b76f9 // indirect
@@ -88,7 +88,7 @@ require (
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mdlayher/netlink v1.11.2 // indirect
 	github.com/mdlayher/socket v0.6.1 // indirect
-	github.com/metacubex/amneziawg-go v0.0.0-20260726091836-16af3a7a9a29 // indirect
+	github.com/metacubex/amneziawg-go v0.0.0-20260816073447-736a78668832 // indirect
 	github.com/metacubex/ascon v0.1.0 // indirect
 	github.com/metacubex/bart v0.29.0 // indirect
 	github.com/metacubex/bbolt v0.0.0-20260706163408-d4ec34ad7c48 // indirect
@@ -99,7 +99,7 @@ require (
 	github.com/metacubex/edwards25519 v1.2.0 // indirect
 	github.com/metacubex/fswatch v0.1.1 // indirect
 	github.com/metacubex/gopacket v1.1.20-0.20230608035415-7e2f98a3e759 // indirect
-	github.com/metacubex/gvisor v0.0.0-20260807021258-5683e078dbc4 // indirect
+	github.com/metacubex/gvisor v0.0.0-20260810011720-3cc44cf9ac22 // indirect
 	github.com/metacubex/hkdf v0.1.0 // indirect
 	github.com/metacubex/hpke v0.1.0 // indirect
 	github.com/metacubex/http v0.1.7 // indirect
@@ -107,6 +107,7 @@ require (
 	github.com/metacubex/jls-tls v0.0.0-20260723084315-67adc0e2f796 // indirect
 	github.com/metacubex/jsonv2 v0.0.0-20260721082349-16b4998c8f89 // indirect
 	github.com/metacubex/kcp-go v0.0.0-20260105040817-550693377604 // indirect
+	github.com/metacubex/mipstack v0.0.0-20260817003612-3b1d17af5a49 // indirect
 	github.com/metacubex/mlkem v0.1.0 // indirect
 	github.com/metacubex/qpack v0.6.0 // indirect
 	github.com/metacubex/quic-go v0.61.1-0.20260727080200-2548683b76f4 // indirect
@@ -118,16 +119,17 @@ require (
 	github.com/metacubex/sing-shadowsocks v0.2.12 // indirect
 	github.com/metacubex/sing-shadowsocks2 v0.2.7 // indirect
 	github.com/metacubex/sing-vmess v0.2.5 // indirect
-	github.com/metacubex/sing-wireguard v0.0.0-20260804133520-b873d2f3e751 // indirect
+	github.com/metacubex/sing-wireguard v0.0.0-20260810013230-110eac03c3f0 // indirect
 	github.com/metacubex/smux v0.0.0-20260105030934-d0c8756d3141 // indirect
 	github.com/metacubex/ssh v0.1.0 // indirect
 	github.com/metacubex/tailscale v0.0.0-20260807072706-a4fb5feabcbb // indirect
 	github.com/metacubex/tailscale-wireguard-go v0.0.0-20260725073821-e61ab99cede2 // indirect
 	github.com/metacubex/tfo-go v0.0.0-20260623020846-376a77860b8c // indirect
-	github.com/metacubex/tls v0.1.7 // indirect
+	github.com/metacubex/tls v0.1.8 // indirect
 	github.com/metacubex/utls v1.8.7 // indirect
 	github.com/metacubex/wireguard-go v0.0.0-20250820062549-a6cecdd7f57f // indirect
 	github.com/metacubex/yamux v0.0.0-20250918083631-dd5f17c0be49 // indirect
+	github.com/metacubex/zerotier-go v0.0.0-20260813124750-13fa6f45da5f // indirect
 	github.com/miekg/dns v1.1.72 // indirect
 	github.com/minio/crc64nvme v1.1.1 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
@@ -150,7 +152,7 @@ require (
 	github.com/sina-ghaderi/poly1305 v0.0.0-20220724002748-c5926b03988b // indirect
 	github.com/sina-ghaderi/rabaead v0.0.0-20220730151906-ab6e06b96e8c // indirect
 	github.com/sina-ghaderi/rabbitio v0.0.0-20220730151941-9ce26f4f872e // indirect
-	github.com/sirupsen/logrus v1.9.4 // indirect
+	github.com/sirupsen/logrus v1.10.0 // indirect
 	github.com/sohaha/zlsgo v1.7.21 // indirect
 	github.com/tailscale/certstore v0.1.1-0.20260409135935-3638fb84b77d // indirect
 	github.com/tailscale/go-winio v0.0.0-20231025203758-c4f33415bf55 // indirect
@@ -177,18 +179,18 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	go4.org/mem v0.0.0-20240501181205-ae6ca9944745 // indirect
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba // indirect
-	golang.org/x/arch v0.29.0 // indirect
-	golang.org/x/crypto v0.54.0 // indirect
-	golang.org/x/exp v0.0.0-20260727155853-b88d891fe743 // indirect
-	golang.org/x/mod v0.38.0 // indirect
+	golang.org/x/arch v0.30.0 // indirect
+	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/exp v0.0.0-20260813180055-c1d0aacb2297 // indirect
+	golang.org/x/mod v0.40.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.48.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
+	golang.org/x/tools v0.49.0 // indirect
+	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/ini.v1 v1.67.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
