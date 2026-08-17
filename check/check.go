@@ -80,6 +80,7 @@ type Result struct {
 	IPRisk         string
 	Country        string
 	CountryCodeTag string
+	ISPTag         string
 }
 
 // ProxyChecker 处理代理检测的主要结构体
@@ -947,7 +948,7 @@ func checkOnePlatform(job *ProxyJob, plat string, mediaClient *http.Client, db *
 		}
 	case "youtube":
 		var ytRaw string
-		withRetry(ctx, func() error {
+		withRetry(ctx, func() error { //nolint:errcheck
 			var e error
 			ytRaw, e = platform.CheckYoutube(mediaClient)
 			return e
@@ -1020,13 +1021,14 @@ func checkOnePlatform(job *ProxyJob, plat string, mediaClient *http.Client, db *
 	case "iprisk":
 		// 如果已有 IP，就直接用，不再调用 GetProxyCountry
 		if job.Result.IP == "" {
-			country, ip, countryCodeTag, _ := proxyutils.GetProxyCountry(mediaClient, db, ctx, job.CfLoc, job.CfIP)
+			country, ip, countryCodeTag, ispTag, _ := proxyutils.GetProxyCountry(mediaClient, db, ctx, job.CfLoc, job.CfIP)
 			if ip == "" {
 				break
 			}
 			job.Result.IP = ip
 			job.Result.Country = country
 			job.Result.CountryCodeTag = countryCodeTag
+			job.Result.ISPTag = ispTag
 		}
 		var risk string
 		err := withRetry(ctx, func() error {
@@ -1048,9 +1050,10 @@ func (pc *ProxyChecker) updateProxyName(res *Result, httpClient *ProxyClient, sp
 	// 以节点IP查询位置重命名（如果开启）
 	if config.GlobalConfig.RenameNode {
 		if res.Country == "" {
-			country, _, countryCodeTag, _ := proxyutils.GetProxyCountry(httpClient.Client, db, jctx, cfLoc, cfIP)
+			country, _, countryCodeTag, ispTag, _ := proxyutils.GetProxyCountry(httpClient.Client, db, jctx, cfLoc, cfIP)
 			res.Country = country
 			res.CountryCodeTag = countryCodeTag
+			res.ISPTag = ispTag
 		}
 		if res.Country != "" {
 			res.Proxy["name"] = config.GlobalConfig.NodePrefix + proxyutils.Rename(res.Country, res.CountryCodeTag)
@@ -1174,9 +1177,8 @@ func (pc *ProxyChecker) updateProxyName(res *Result, httpClient *ProxyClient, sp
 
 	// 运营商标签
 	if config.GlobalConfig.ISPCheck {
-		ISPTag := proxyutils.GetISPInfo(httpClient.Client)
-		if ISPTag != "" {
-			tags = append(tags, ISPTag)
+		if res.ISPTag != "" {
+			tags = append(tags, res.ISPTag)
 		}
 	}
 
@@ -1430,7 +1432,7 @@ func (job *ProxyJob) checkJobLocation(db *maxminddb.Reader, ctx context.Context)
 		Timeout:   time.Duration(locTimeout) * time.Second,
 	}
 
-	country, ip, countryCodeTag, err := proxyutils.GetProxyCountry(locClient, db, ctx, job.CfLoc, job.CfIP)
+	country, ip, countryCodeTag, ispTag, err := proxyutils.GetProxyCountry(locClient, db, ctx, job.CfLoc, job.CfIP)
 	if err != nil || country == "" {
 		return false
 	}
@@ -1441,6 +1443,7 @@ func (job *ProxyJob) checkJobLocation(db *maxminddb.Reader, ctx context.Context)
 
 	job.Result.IP = ip
 	job.Result.Country = country
+	job.Result.ISPTag = ispTag
 	job.Result.CountryCodeTag = countryCodeTag
 	return true
 }

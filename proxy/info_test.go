@@ -31,7 +31,7 @@ func TestGetAnalyzed(t *testing.T) {
 	// os.Setenv("SUBS-CHECK-PRO-CALL", "true")
 	// defer os.Unsetenv("SUBS-CHECK-PRO-CALL")
 	cli, err := ipinfo.New(
-		ipinfo.WithHttpClient(&http.Client{}),
+		ipinfo.WithHTTPClient(&http.Client{}),
 		ipinfo.WithDBReader(db),
 		ipinfo.WithIPAPIs(
 		// "https://ip.122911.xyz/api/ipinfo",
@@ -58,9 +58,9 @@ func TestGetAnalyzed(t *testing.T) {
 	defer cli.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	loc, _, countryCodeTag, _ := cli.GetAnalyzed(ctx, "", "")
+	loc, _, countryCodeTag, ispTag, _ := cli.GetAnalyzed(ctx, "", "")
 	if loc != "" && countryCodeTag != "" {
-		t.Logf("GetAnalyzed 获取节点位置成功: %s %s", loc, countryCodeTag)
+		t.Logf("GetAnalyzed 获取节点位置成功: %s %s %s", loc, countryCodeTag, ispTag)
 	} else {
 		t.Error("未获取到数据，说明api不可用，或者查询逻辑未涵盖")
 	}
@@ -85,7 +85,7 @@ func TestLookupGeoIPDataWithMMDB(t *testing.T) {
 	}
 
 	cli, err := ipinfo.New(
-		ipinfo.WithHttpClient(&http.Client{}),
+		ipinfo.WithHTTPClient(&http.Client{}),
 		ipinfo.WithDBReader(db),
 	)
 	if err != nil {

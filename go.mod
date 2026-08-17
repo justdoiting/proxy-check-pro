@@ -22,7 +22,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/samber/lo v1.53.0
 	github.com/shirou/gopsutil/v4 v4.26.7
-	github.com/sinspired/checkip v0.4.1
+	github.com/sinspired/checkip v0.5.1
 	github.com/sinspired/subs-check-pro-webui v0.0.0-20260722093027-fe885518be2e
 	golang.org/x/net v0.57.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1

@@ -542,7 +542,7 @@ func processSubscription(
 			handle(node)
 		}
 	}
-	data = nil
+	data = nil //nolint:ineffassign
 	flush() // 发送剩余节点
 
 	// 将解析器内部已去重的数量补回 rawHits，使其代表真实候选数

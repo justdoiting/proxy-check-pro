@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/metacubex/mihomo/common/convert"
 	"github.com/oschwald/maxminddb-golang/v2"
@@ -43,11 +44,32 @@ var geoAPIsMe = []string{
 
 // NewIPInfoClient 创建 ipinfo 检测客户端
 func NewIPInfoClient(httpClient *http.Client, db *maxminddb.Reader, ipList, geoList []string) (*ipinfo.Client, error) {
+	// 从当前项目 (subs-check-pro) 的全局配置中读取 ISP 设置
+	c := config.GlobalConfig
+
+	if c.ISPTimeout <= 0 {
+		c.ISPTimeout = 5 // 默认 5 秒，最高 15 秒
+	} else if c.ISPTimeout > 15 {
+		c.ISPTimeout = 15 // 最大 15 秒
+	}
+
+	// 映射为 ipinfo 工具包所需的配置结构
+	ispCfg := ipinfo.ISPConfig{
+		ISPCheck:                 c.ISPCheck,
+		ISPTimeout:               time.Duration(c.ISPTimeout) * time.Second,
+		ISPCheckAPIKeyIPAPI:      c.ISPCheckAPIKeyIPAPI,
+		ISPCheckAPIKeyProxyCheck: c.ISPCheckAPIKeyProxyCheck,
+		ISPCheckAPIKeyIPLocate:   c.ISPCheckAPIKeyIPLocate,
+		ISPCheckAPIKeyIPData:     c.ISPCheckAPIKeyIPData,
+	}
+
+	// 初始化客户端并注入配置
 	return ipinfo.New(
-		ipinfo.WithHttpClient(httpClient),
+		ipinfo.WithHTTPClient(httpClient),
 		ipinfo.WithDBReader(db),
 		ipinfo.WithIPAPIs(ipList...),
 		ipinfo.WithGeoAPIs(geoList...),
+		ipinfo.WithISPConfig(ispCfg),
 	)
 }
 
@@ -62,7 +84,7 @@ func NewIPInfoClient(httpClient *http.Client, db *maxminddb.Reader, ipList, geoL
 // - NodeWithoutCF: HK²
 //
 // - 前两位字母是实际浏览网站识别的位置, -US⁰为使用CF CDN服务的网站识别的位置, 比如GPT, X等
-func GetProxyCountry(httpClient *http.Client, db *maxminddb.Reader, getAnalyzedCtx context.Context, cfLoc string, cfIP string) (loc string, ip string, countryCodeTag string, err error) {
+func GetProxyCountry(httpClient *http.Client, db *maxminddb.Reader, getAnalyzedCtx context.Context, cfLoc string, cfIP string) (loc, ip, countryCodeTag, ispTag string, err error) {
 	// 设置一个临时环境变量，以排除部分api因数据库更新不及时返回的 CN
 	os.Setenv("SUBS-CHECK-PRO-CALL", "true")
 	defer os.Unsetenv("SUBS-CHECK-PRO-CALL")
@@ -76,13 +98,13 @@ func GetProxyCountry(httpClient *http.Client, db *maxminddb.Reader, getAnalyzedC
 	}
 
 	for range config.GlobalConfig.SubUrlsReTry {
-		loc, ip, countryCodeTag, err = cliMe.GetAnalyzed(getAnalyzedCtx, cfLoc, cfIP)
+		loc, ip, countryCodeTag, ispTag, err = cliMe.GetAnalyzed(getAnalyzedCtx, cfLoc, cfIP)
 		if err != nil {
 			slog.Debug("MeAPI 获取节点位置失败", "error", err)
 		}
 		if loc != "" && countryCodeTag != "" {
-			slog.Debug("MeAPI 获取节点位置成功", "ip", ip, "loc", loc, "code", countryCodeTag)
-			return loc, ip, countryCodeTag, nil
+			slog.Debug("MeAPI 获取节点位置成功", "ip", ip, "loc", loc, "code", countryCodeTag, "isp", ispTag)
+			return loc, ip, countryCodeTag, ispTag, nil
 		} else {
 			slog.Debug("MeAPI 获取节点位置失败", "ip", ip, "loc", loc, "code", countryCodeTag)
 		}
@@ -95,22 +117,22 @@ NextClient:
 		slog.Debug("创建 ipinfo 主客户端失败", "error", err)
 	} else {
 		defer cli.Close()
-		loc, ip, countryCodeTag, err = cli.GetAnalyzed(getAnalyzedCtx, cfLoc, cfIP)
+		loc, ip, countryCodeTag, ispTag, err = cli.GetAnalyzed(getAnalyzedCtx, cfLoc, cfIP)
 		if err != nil {
 			slog.Debug("Analyzed 获取节点位置失败", "error", err)
-			return "", "", "", err
+			return "", "", "", "", err
 		}
 		if loc != "" && countryCodeTag != "" {
-			slog.Debug("Analyzed 获取节点位置成功", "ip", ip, "loc", loc, "code", countryCodeTag)
-			return loc, ip, countryCodeTag, nil
+			slog.Debug("Analyzed 获取节点位置成功", "ip", ip, "loc", loc, "code", countryCodeTag, "isp", ispTag)
+			return loc, ip, countryCodeTag, ispTag, nil
 		} else {
 			slog.Debug("Analyzed 获取节点位置空白", "ip", ip, "loc", loc, "code", countryCodeTag)
 		}
 	}
-	return "", "", "", err
+	return "", "", "", "", err
 }
 
-func GetEdgeOneProxy(httpClient *http.Client) (loc string, ip string) {
+func GetEdgeOneProxy(httpClient *http.Client) (loc, ip string) {
 	type GeoResponse struct {
 		Eo struct {
 			Geo struct {

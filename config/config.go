@@ -97,7 +97,7 @@ type Config struct {
 	// 不是"空闲内存百分比"。值越小 GC 越频繁、内存峰值越低、CPU 开销略增。
 	// 默认 70（Go 默认是 100）。<=0 时使用 Go 默认值 100。
 	// 注意：真正防止 OOM 的是 MemoryLimitMB；这个只是日常情况下的内存/CPU 取舍旋钮。
-	GCPercent          int      `yaml:"gc-percent"`
+	GCPercent int `yaml:"gc-percent"`
 
 	SubUrlsRemote      []string `yaml:"sub-urls-remote"`
 	SubUrls            []string `yaml:"sub-urls"`
@@ -120,28 +120,54 @@ type Config struct {
 	SubStorePushService string   `yaml:"sub-store-push-service"`
 	SubStoreProduceCron string   `yaml:"sub-store-produce-cron"`
 	MihomoOverwriteURL  string   `yaml:"mihomo-overwrite-url"`
-	ISPCheck            bool     `yaml:"isp-check"`
-	MediaCheck          bool     `yaml:"media-check"`
-	Platforms           []string `yaml:"platforms"`
-	MaxMindDBPath       string   `yaml:"maxmind-db-path"`
-	DropBadCfNodes      bool     `yaml:"drop-bad-cf-nodes"`
-	EnhancedTag         bool     `yaml:"enhanced-tag"`
-	SuccessLimit        int32    `yaml:"success-limit"`
-	NodePrefix          string   `yaml:"node-prefix"`
-	NodeType            []string `yaml:"node-type"`
-	NodeLoc             []string `yaml:"node-loc"`
-	EnableWebUI         bool     `yaml:"enable-web-ui"`
-	APIKey              string   `yaml:"api-key"`
-	SharePassword       string   `yaml:"share-password"`
-	CallbackScript      string   `yaml:"callback-script"`
-	SystemProxy         string   `yaml:"system-proxy"`
-	GithubProxy         string   `yaml:"github-proxy"`
-	GithubProxyGroup    []string `yaml:"ghproxy-group"`
-	EnableSelfUpdate    bool     `yaml:"update"`
-	UpdateOnStartup     bool     `yaml:"update-on-startup"`
-	CronCheckUpdate     string   `yaml:"cron-check-update"`
-	Prerelease          bool     `yaml:"prerelease"`
-	UpdateTimeout       int      `yaml:"update-timeout"`
+
+	// ISPCheck 是否开启出口 ISP 类型检测（机房/住宅/移动/商宽/教育/政府/银行等）
+	ISPCheck bool `yaml:"isp-check"`
+
+	// ISPTimeout 是 ISP 检查的超时时间，单位为秒
+	ISPTimeout int `yaml:"isp-timeout"`
+
+	// 以下四个渠道的 apikey 均为可选：留空则该渠道自动跳过，不参与轮询。
+	// 建议至少配置 2 个渠道，通过轮询F叠加每日免费额度，并在某一渠道
+	// 请求失败（超额 / 网络错误）时自动切换到下一个渠道。
+
+	// ISPCheckAPIKeyIPAPI ipapi.is 的 apikey（https://ipapi.is）
+	// 免费额度：注册后每天 1000 次
+	ISPCheckAPIKeyIPAPI string `yaml:"isp-check-api-key-ipapi"`
+
+	// ISPCheckAPIKeyProxyCheck proxycheck.io 的 apikey（https://proxycheck.io）
+	// 免费额度：每天 1000 次（另有约 5 倍的突发令牌可用）
+	ISPCheckAPIKeyProxyCheck string `yaml:"isp-check-api-key-proxycheck"`
+
+	// ISPCheckAPIKeyIPLocate iplocate.io 的 apikey（https://iplocate.io）
+	// 免费额度：每天 1000 次，免费版与付费版字段完全一致
+	ISPCheckAPIKeyIPLocate string `yaml:"isp-check-api-key-iplocate"`
+
+	// ISPCheckAPIKeyIPData ipdata.co 的 apikey（https://ipdata.co）
+	// 免费额度：每天 1500 次（或每月 45000 次）
+	ISPCheckAPIKeyIPData string `yaml:"isp-check-api-key-ipdata"`
+
+	MediaCheck       bool     `yaml:"media-check"`
+	Platforms        []string `yaml:"platforms"`
+	MaxMindDBPath    string   `yaml:"maxmind-db-path"`
+	DropBadCfNodes   bool     `yaml:"drop-bad-cf-nodes"`
+	EnhancedTag      bool     `yaml:"enhanced-tag"`
+	SuccessLimit     int32    `yaml:"success-limit"`
+	NodePrefix       string   `yaml:"node-prefix"`
+	NodeType         []string `yaml:"node-type"`
+	NodeLoc          []string `yaml:"node-loc"`
+	EnableWebUI      bool     `yaml:"enable-web-ui"`
+	APIKey           string   `yaml:"api-key"`
+	SharePassword    string   `yaml:"share-password"`
+	CallbackScript   string   `yaml:"callback-script"`
+	SystemProxy      string   `yaml:"system-proxy"`
+	GithubProxy      string   `yaml:"github-proxy"`
+	GithubProxyGroup []string `yaml:"ghproxy-group"`
+	EnableSelfUpdate bool     `yaml:"update"`
+	UpdateOnStartup  bool     `yaml:"update-on-startup"`
+	CronCheckUpdate  string   `yaml:"cron-check-update"`
+	Prerelease       bool     `yaml:"prerelease"`
+	UpdateTimeout    int      `yaml:"update-timeout"`
 
 	// SingboxLatest / SingboxOld iOS 仍停留在 1.11，兼容两个版本
 	SingboxLatest SingBoxConfig `yaml:"singbox-latest"`
@@ -180,6 +206,8 @@ var OriginDefaultConfig = &Config{
 		RegexFilterKeep: true, // 默认白名单
 		SubInfo:         false,
 	},
+
+	ISPTimeout: 5, // 默认 5 秒，最高 15 秒
 }
 
 // GlobalConfig 指向当前生效配置
