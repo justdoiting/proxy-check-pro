@@ -3,8 +3,8 @@ package utils
 
 import (
 	"bytes"
-	"github.com/goccy/go-json"
 	"fmt"
+	"github.com/goccy/go-json"
 	"io"
 	"log/slog"
 	"net/http"
@@ -121,13 +121,30 @@ function operator(proxies = []) {
 
 // 全局运行时变量
 var (
-	LatestSingboxVersion = "1.12"
-	OldSingboxVersion    = "1.11"
-	IsGithubProxy        bool
-	BaseURL              string       // 基础api地址
-	SubUserInfoURL       string       // SubUserInfoURL 订阅流量信息 URL
-	operatorCounter      atomic.Int64 // 脚本操作元素ID计数
+	IsGithubProxy   bool
+	BaseURL         string       // 基础api地址
+	SubUserInfoURL  string       // SubUserInfoURL 订阅流量信息 URL
+	operatorCounter atomic.Int64 // 脚本操作元素ID计数
 )
+
+var (
+	LatestSingboxVersion string
+	OldSingboxVersion    string
+)
+
+// InitSingboxVersion 程序初始化时对 Singbox 版本号进行初始化
+func InitSingboxVersion() {
+	if config.GlobalConfig.SingboxLatest.Version != "" && config.GlobalConfig.SingboxLatest.JSON != "" && config.GlobalConfig.SingboxLatest.JS != "" {
+		LatestSingboxVersion = config.GlobalConfig.SingboxLatest.Version
+	} else {
+		LatestSingboxVersion = "1.12"
+	}
+	if config.GlobalConfig.SingboxOld.Version != "" && config.GlobalConfig.SingboxOld.JSON != "" && config.GlobalConfig.SingboxOld.JS != "" {
+		OldSingboxVersion = config.GlobalConfig.SingboxOld.Version
+	} else {
+		OldSingboxVersion = "1.11"
+	}
+}
 
 // ID 生成
 
@@ -862,12 +879,9 @@ func UpdateSubStore(yamlData []byte) {
 	}
 
 	// --- singbox ---
-	if config.GlobalConfig.SingboxLatest.Version != "" {
-		LatestSingboxVersion = config.GlobalConfig.SingboxLatest.Version
-	}
-	if config.GlobalConfig.SingboxOld.Version != "" {
-		OldSingboxVersion = config.GlobalConfig.SingboxOld.Version
-	}
+	// 除了程序初始化时从配置获取 Singbox 版本号,只有在sub-store更新时变动才有意义
+	InitSingboxVersion()
+
 	processSingboxFile(&config.GlobalConfig.SingboxLatest, latestSingboxJS, latestSingboxJSON, LatestSingboxVersion)
 	processSingboxFile(&config.GlobalConfig.SingboxOld, OldSingboxJS, OldSingboxJSON, OldSingboxVersion)
 

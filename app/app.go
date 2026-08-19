@@ -148,6 +148,10 @@ func (app *App) Initialize() error {
 		if runtime.GOOS == "linux" && runtime.GOARCH == "386" {
 			slog.Warn("Node.js 不支持 Linux 32位架构，Sub-Store 服务未启动")
 		} else {
+
+			// sub-store 服务启动时,Singbox 版本号才有意义
+			utils.InitSingboxVersion()
+
 			subStoreAddr := normalizeListenAddr(config.GlobalConfig.SubStorePort)
 			if !subStorePortAvailable {
 				assets.IsSubStoreRunning.Store(false)
