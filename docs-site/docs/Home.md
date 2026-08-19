@@ -64,6 +64,15 @@ docker run -d \
 - 配置示例：
   - [查看默认配置](https://github.com/sinspired/subs-check-pro/blob/main/config/config.yaml.example)
 
+## 🌍 域名相关
+
+Cloudflare Tunnel 外网访问和通知渠道部署需要域名，可自行注册或点击下方链接注册免费域名
+
+[![域名注册](https://img.shields.io/badge/DigitalPlat-注册免费域名-2563eb?style=flat-square&logo=databricks&logoColor=ffffff)](https://dashboard.digitalplat.org/signup?ref=HZcosTVlmQ)
+
+
+请勿用于非法用途！
+
 ## 👥 社区
 
 - Telegram 群组：[加入群组](https://t.me/subs_check_pro)

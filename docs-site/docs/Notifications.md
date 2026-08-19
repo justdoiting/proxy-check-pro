@@ -59,10 +59,9 @@ recipient-url:
 
 ## 🌍 域名相关
 
-> [!TIP] 
-> 通知渠道部署需要域名，可自行注册或点击下方链接注册免费域名
->
-> [![域名注册](https://img.shields.io/badge/DigitalPlat-注册免费域名-2563eb?style=flat-square&logo=databricks&logoColor=ffffff)](https://dashboard.digitalplat.org/signup?ref=HZcosTVlmQ)
+通知渠道部署需要域名，可自行注册或点击下方链接注册免费域名
 
-> [!CAUTION]
-> 请勿用于非法用途！
+[![域名注册](https://img.shields.io/badge/DigitalPlat-注册免费域名-2563eb?style=flat-square&logo=databricks&logoColor=ffffff)](https://dashboard.digitalplat.org/signup?ref=HZcosTVlmQ)
+
+
+请勿用于非法用途！
