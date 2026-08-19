@@ -227,7 +227,7 @@ func patchDisabled(raw json.RawMessage, disabled bool) (any, error) {
 //  3. Node Split     —— 裂变，依赖 ① 结果
 //  4. Regex Sort     —— 正则排序
 func buildScpOps(cfg config.SubProcessConfig) []any {
-	needResolve := cfg.ResolveDomain || cfg.NodeSplit
+	needResolve := cfg.ResolveDomain.Enable || cfg.NodeSplit
 
 	var ops []any
 
@@ -246,18 +246,21 @@ func buildScpOps(cfg config.SubProcessConfig) []any {
 
 	// 2. Resolve Domain
 	if needResolve {
+		rd := cfg.ResolveDomain
+
 		ops = append(ops, ScriptOperator{
 			Type:       "Resolve Domain Operator",
 			CustomName: "节点解析",
 			ID:         newOperatorID(),
 			Args: Args{
-				"provider":    "Ali",
-				"type":        "IPv6",
+				"provider":    rd.Provider, // Ali
+				"type":        rd.Type,     // IPv6
 				"filter":      "disabled",
-				"cache":       "enabled",
-				"url":         "",
-				"edns":        "223.6.6.6",
-				"concurrency": "20",
+				"cache":       rd.Cache,       // enabled
+				"edns":        rd.Edns,        // 223.6.6.6
+				"concurrency": rd.Concurrency, // 20
+				"timeout":     rd.Timeout,     // 15000
+				"cacheTtl":    rd.CacheTTL,    // 300
 			},
 		})
 	}

@@ -11,11 +11,22 @@ type SingBoxConfig struct {
 	JS      string `yaml:"js"`
 }
 
+type ResolveDomainConfig struct {
+	Enable      bool   `yaml:"enable"`
+	Provider    string `yaml:"provider"`
+	Type        string `yaml:"type"`
+	Cache       string `yaml:"cache"`
+	CacheTTL    int    `yaml:"cache-ttl"`
+	Edns        string `yaml:"edns"`
+	Concurrency int    `yaml:"concurrency"`
+	Timeout     int    `yaml:"timeout"`
+}
+
 // SubProcessConfig sub 订阅的操作配置。
 type SubProcessConfig struct {
-	// ResolveDomain 开启 DNS 解析（固定 Ali / IPv6 / 缓存启用）
-	// NodeSplit=true 时自动隐式开启，无需重复设置
-	ResolveDomain bool `yaml:"resolve-domain"`
+	// ResolveDomain DNS解析配置
+	// NodeSplit=true 时自动隐式开启
+	ResolveDomain ResolveDomainConfig `yaml:"resolve-domain"`
 
 	// NodeSplit 开启节点裂变（将多 IP 展开为独立节点）
 	// 为 true 时自动前置开启 ResolveDomain
@@ -201,7 +212,16 @@ var OriginDefaultConfig = &Config{
 	SubsDedupeBatch: 100000,
 
 	SubProcess: SubProcessConfig{
-		ResolveDomain:   false,
+		ResolveDomain: ResolveDomainConfig{
+			Enable:      false,
+			Provider:    "Ali",
+			Type:        "IPv4",
+			Cache:       "enabled",
+			CacheTTL:    3600,
+			Edns:        "",
+			Concurrency: 10,
+			Timeout:     8000,
+		},
 		NodeSplit:       false,
 		RegexFilterKeep: true, // 默认白名单
 		SubInfo:         false,

@@ -158,7 +158,16 @@ mihomo-overwrite-url: http://127.0.0.1:8199/Sinspired_Rules_CDN.yaml
 
 # sub-store 节点操作，针对默认的 sub 订阅
 sub-process:
-  resolve-domain: false # 开启 DNS 解析（固定 Ali / IPv6 / 缓存启用）
+  resolve-domain:
+    enable: false # 是否开启 DNS 解析
+    provider: ali # DNS 服务商（ali / cloudflare / google）
+    edns: "" # EDNS 设置
+    concurrency: 10 # 并发数，默认10，在代理软件中不要超过20
+    timeout: 8000 # 超时（毫秒），默认8000
+    type: ipv4 # ipv4 / ipv6
+    cache: enable # 缓存策略
+    cache-ttl: 3600 # 缓存时长(秒)
+
   node-split: false # 开启节点裂变（将多 IP 展开为独立节点）
   sub-info: false # 注入订阅流量信息节点
 

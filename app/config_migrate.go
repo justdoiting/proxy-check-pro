@@ -2,6 +2,7 @@ package app
 
 import (
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/goccy/go-yaml"
@@ -21,6 +22,13 @@ type configV1 struct {
 	SingboxOld    singBoxConfigV1 `yaml:"singbox-old"`
 }
 
+// resolveDomainV1 旧格式：sub-process.resolve-domain 为布尔值
+type resolveDomainV1 struct {
+	SubProcess struct {
+		ResolveDomain bool `yaml:"resolve-domain"`
+	} `yaml:"sub-process"`
+}
+
 // migrateConfig 检测配置文件中的旧格式字段，若存在则原地升级并保存。
 func (app *App) migrateConfig() error {
 	data, err := os.ReadFile(app.configPath)
@@ -29,62 +37,59 @@ func (app *App) migrateConfig() error {
 		return nil
 	}
 
-	var old configV1
-	// 解析失败不阻断流程（可能是全新配置）
-	if err := yaml.Unmarshal(data, &old); err != nil {
-		return nil
-	}
-
-	latestMigrated := migrateSingBoxV1(&old.SingboxLatest)
-	oldMigrated := migrateSingBoxV1(&old.SingboxOld)
-
-	if !latestMigrated && !oldMigrated {
-		// 无需迁移
-		return nil
-	}
-
-	// 将迁移结果写回：用文本替换，保留文件其余内容和注释
 	content := string(data)
-	if latestMigrated {
-		content = rewriteSingboxBlock(content, "singbox-latest", old.SingboxLatest)
-	}
-	if oldMigrated {
-		content = rewriteSingboxBlock(content, "singbox-old", old.SingboxOld)
+	needWrite := false
+
+	// 迁移 singbox v1 → v2
+	var old configV1
+	if err := yaml.Unmarshal(data, &old); err == nil {
+		if migrateSingBoxV1(&old.SingboxLatest) {
+			content = rewriteSingboxBlock(content, "singbox-latest", old.SingboxLatest)
+			needWrite = true
+		}
+		if migrateSingBoxV1(&old.SingboxOld) {
+			content = rewriteSingboxBlock(content, "singbox-old", old.SingboxOld)
+			needWrite = true
+		}
 	}
 
-	if err := os.WriteFile(app.configPath, []byte(content), 0o644); err != nil {
-		return err
+	// 迁移 resolve-domain: false → 新对象格式
+	var rd resolveDomainV1
+	if err := yaml.Unmarshal(data, &rd); err == nil {
+		// resolve-domain 为布尔 → 旧格式
+		// 这里只要字段存在就是旧格式，不用再判断 true/false
+		if rd.SubProcess.ResolveDomain || !rd.SubProcess.ResolveDomain {
+			content = rewriteResolveDomain(content, rd.SubProcess.ResolveDomain)
+			needWrite = true
+		}
 	}
 
-	slog.Info("singbox 配置已自动迁移为新格式")
+	// 写回文件
+	if needWrite {
+		if err := os.WriteFile(app.configPath, []byte(content), 0o644); err != nil {
+			return err
+		}
+		slog.Info("配置已自动迁移为新格式")
+	}
+
 	return nil
 }
 
 // migrateSingBoxV1 检测是否为旧列表格式。
 // 若是，取第一个元素留在原字段（仅用于后续文本替换），返回 true。
 func migrateSingBoxV1(v1 *singBoxConfigV1) bool {
-	if len(v1.JSON) == 0 && len(v1.JS) == 0 {
-		return false
-	}
-	// 列表长度 >0 说明是旧格式，取第一个元素即可（其余忽略）
-	return true
+	return len(v1.JSON) > 0 || len(v1.JS) > 0
 }
 
 // rewriteSingboxBlock 在原始 yaml 文本中找到指定 singbox 块，
 // 将其 json/js 列表写法替换为字符串写法，其余内容保持不变。
-//
-// 替换规则（只处理直属于该块的 json/js 键）：
-//
-//	json:          →  json: https://...
-//	  - https://...
 func rewriteSingboxBlock(content, blockKey string, v1 singBoxConfigV1) string {
 	lines := strings.Split(content, "\n")
 
 	// 找到块的起始行
 	blockStart := -1
 	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if trimmed == blockKey+":" || strings.HasPrefix(trimmed, blockKey+":") {
+		if strings.TrimSpace(line) == blockKey+":" {
 			blockStart = i
 			break
 		}
@@ -97,68 +102,114 @@ func rewriteSingboxBlock(content, blockKey string, v1 singBoxConfigV1) string {
 	blockIndent := len(lines[blockStart]) - len(strings.TrimLeft(lines[blockStart], " \t"))
 
 	// 在块范围内处理 json / js 列表
-	i := blockStart + 1
-	for i < len(lines) {
+	for i := blockStart + 1; i < len(lines); i++ {
 		line := lines[i]
-		if line == "" {
-			i++
+		if strings.TrimSpace(line) == "" {
 			continue
 		}
 		indent := len(line) - len(strings.TrimLeft(line, " \t"))
 		// 退出块范围
-		if indent <= blockIndent && strings.TrimSpace(line) != "" {
+		if indent <= blockIndent {
 			break
 		}
 
 		trimmed := strings.TrimSpace(line)
 
 		// 找到 json: 或 js: 且值为空（旧列表写法的标志）
-		var fieldValue string
-		var matched bool
-		if after, ok := strings.CutPrefix(trimmed, "json:"); ok {
-			fieldValue = strings.TrimSpace(after)
-			matched = fieldValue == "" && len(v1.JSON) > 0
-		} else if after, ok := strings.CutPrefix(trimmed, "js:"); ok {
-			fieldValue = strings.TrimSpace(after)
-			matched = fieldValue == "" && len(v1.JS) > 0
+		var list []string
+		var key string
+
+		if strings.HasPrefix(trimmed, "json:") && len(v1.JSON) > 0 {
+			key = "json:"
+			list = v1.JSON
+		} else if strings.HasPrefix(trimmed, "js:") && len(v1.JS) > 0 {
+			key = "js:"
+			list = v1.JS
+		} else {
+			continue
 		}
 
-		if matched {
-			// 收集下面的列表项
-			var listItems []string
-			j := i + 1
-			for j < len(lines) {
-				itemLine := lines[j]
-				itemTrimmed := strings.TrimSpace(itemLine)
-				if after, ok := strings.CutPrefix(itemTrimmed, "- "); ok {
-					listItems = append(listItems, after)
-					j++
-				} else {
-					break
-				}
-			}
+		// 替换为字符串写法
+		keyIndent := strings.Repeat(" ", indent)
+		lines[i] = keyIndent + key + " " + list[0]
 
-			if len(listItems) > 0 {
-				// 用第一个值替换当前行，删除列表项行
-				keyIndent := strings.Repeat(" ", indent)
-				var newValue string
-				if strings.HasPrefix(trimmed, "json:") {
-					newValue = keyIndent + "json: " + listItems[0]
-				} else {
-					newValue = keyIndent + "js: " + listItems[0]
-				}
-				// 替换当前行，删除列表项
-				newLines := make([]string, 0, len(lines)-(j-i-1))
-				newLines = append(newLines, lines[:i]...)
-				newLines = append(newLines, newValue)
-				newLines = append(newLines, lines[j:]...)
-				lines = newLines
-				// i 不变，继续处理同位置（现在已是下一个键）
+		// 删除旧列表项
+		j := i + 1
+		for j < len(lines) {
+			t := strings.TrimSpace(lines[j])
+			if t == "" {
+				j++
 				continue
 			}
+			if strings.HasPrefix(t, "- ") {
+				j++
+				continue
+			}
+			break
 		}
-		i++
+
+		newLines := append([]string{}, lines[:i+1]...)
+		newLines = append(newLines, lines[j:]...)
+		return strings.Join(newLines, "\n")
 	}
 
-	return strings.Join(lines, "\n")
+	return content
+}
+
+// rewriteResolveDomain resolve-domain: false → 新对象格式迁移（含注释）
+func rewriteResolveDomain(content string, oldValue bool) string {
+	lines := strings.Split(content, "\n")
+
+	// 找到 sub-process 块
+	blockStart := -1
+	for i, line := range lines {
+		if strings.TrimSpace(line) == "sub-process:" {
+			blockStart = i
+			break
+		}
+	}
+	if blockStart < 0 {
+		return content
+	}
+
+	blockIndent := len(lines[blockStart]) - len(strings.TrimLeft(lines[blockStart], " \t"))
+
+	// 找 resolve-domain: false
+	for i := blockStart + 1; i < len(lines); i++ {
+		line := lines[i]
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+
+		indent := len(line) - len(strings.TrimLeft(line, " \t"))
+		if indent <= blockIndent {
+			break
+		}
+
+		if strings.HasPrefix(strings.TrimSpace(line), "resolve-domain:") {
+
+			keyIndent := strings.Repeat(" ", indent)
+
+			newBlock := []string{
+				keyIndent + "resolve-domain:",
+				keyIndent + "  enable: " + strings.ToLower(strconv.FormatBool(oldValue)) + " # 是否开启 DNS 解析",
+				keyIndent + "  provider: ali # DNS 服务商（ali / cloudflare / google）",
+				keyIndent + "  concurrency: 10 # 并发数，默认10，在代理软件中不要超过20",
+				keyIndent + "  timeout: 8000 # 超时（毫秒），默认8000",
+				keyIndent + "  edns: \"\" # EDNS 设置",
+				keyIndent + "  type: ipv4 # ipv4 / ipv6",
+				keyIndent + "  cache: enable # 缓存策略",
+				keyIndent + "  cache-ttl: 3600 # 缓存时长(秒)",
+			}
+
+			lines[i] = newBlock[0]
+
+			newLines := append([]string{}, lines[:i+1]...)
+			newLines = append(newLines, newBlock[1:]...)
+			newLines = append(newLines, lines[i+1:]...)
+			return strings.Join(newLines, "\n")
+		}
+	}
+
+	return content
 }
