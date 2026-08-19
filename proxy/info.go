@@ -2,13 +2,14 @@ package proxies
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/metacubex/mihomo/common/convert"
 	"github.com/oschwald/maxminddb-golang/v2"

@@ -1,11 +1,12 @@
 package platform
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/goccy/go-json"
 )
 
 func CheckDisney(httpClient *http.Client) (bool, error) {
