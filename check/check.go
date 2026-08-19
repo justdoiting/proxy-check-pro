@@ -383,6 +383,15 @@ func (pc *ProxyChecker) run(proxies []map[string]any) ([]Result, error) {
 
 	args = append(args, "analysis", "true")
 
+	// 添加 isp 检测参数
+	cfgISP := config.GlobalConfig
+
+	hasISPAPIKey := cfgISP.ISPCheckAPIKeyIPAPI != "" || cfgISP.ISPCheckAPIKeyIPData != "" || cfgISP.ISPCheckAPIKeyIPLocate != "" || cfgISP.ISPCheckAPIKeyProxyCheck != ""
+
+	isISPCheck := cfgISP.ISPCheck && hasISPAPIKey
+
+	args = append(args, "isp-check", isISPCheck)
+
 	if config.GlobalConfig.SuccessRate > 0 {
 		r := fmt.Sprintf("%.1f%%", config.GlobalConfig.SuccessRate*100)
 		args = append(args, "success-rate", r)
