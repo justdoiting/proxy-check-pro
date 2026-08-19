@@ -305,6 +305,7 @@ callback-script: ""
 # -----------通知设置-----------
 # 配置通知渠道，将自动发送检测结果通知，新版本通知
 # 访问 https://github.com/sinspired/apprise_vercel 部署通知 API 服务
+# 访问 https://dashboard.digitalplat.org/signup?ref=HZcosTVlmQ 注册免费域名
 # 按提示部署，建议为 Vercel 项目设置自定义域名（国内访问 Vercel 可能受限）。
 # 填写搭建的apprise API server 地址
 # 示例：https://notify.xxxx.us.kg/notify
@@ -382,6 +383,8 @@ s3-bucket-lookup: "auto"
 system-proxy: ""
 # Github 代理：获取订阅使用
 # github-proxy: "https://ghfast.top/"
+# 访问 https://github.com/sinspired/CF-Proxy 自行搭建 GitHub Proxy
+# 访问 https://dashboard.digitalplat.org/signup?ref=HZcosTVlmQ 注册免费域名
 github-proxy: ""
 # GitHub 代理列表：程序会自动筛选可用的 GitHub 代理
 ghproxy-group:
