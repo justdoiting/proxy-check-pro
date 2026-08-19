@@ -103,9 +103,9 @@ High-performance proxy subscription checker.
 
 ### ⚡ 自动生成 singbox 订阅，支持一键分享
 
-|                                  |                                        |                                        |
-| -------------------------------- | -------------------------------------- | -------------------------------------- |
-|![sub-store](./doc/images/sub-store.png) | ![shareMenu](./doc/images/share-menu.png)  |  ![singbox](./doc/images/sing-box.png)  |
+|                                          |                                           |                                       |
+| ---------------------------------------- | ----------------------------------------- | ------------------------------------- |
+| ![sub-store](./doc/images/sub-store.png) | ![shareMenu](./doc/images/share-menu.png) | ![singbox](./doc/images/sing-box.png) |
 
 |                                  |                                        |
 | -------------------------------- | -------------------------------------- |
@@ -247,6 +247,16 @@ speed-test-url: https://custom-domain/speedtest?bytes=1073741824
 ## 🔔 通知渠道配置
 
 完整文档请见 Wiki：[通知渠道](https://github.com/sinspired/subs-check-pro/wiki/Notifications)
+
+## 🌍 域名相关
+
+> [!TIP] 
+> Cloudflare Tunnel 外网访问和通知渠道部署需要域名，可自行注册或点击下方链接注册免费域名
+>
+> [![域名注册](https://img.shields.io/badge/DigitalPlat-注册免费域名-2563eb?style=flat-square&logo=databricks&logoColor=ffffff)](https://dashboard.digitalplat.org/signup?ref=HZcosTVlmQ)
+
+> [!CAUTION]
+> 请勿用于非法用途！
 
 ## 💾 保存方法
 
