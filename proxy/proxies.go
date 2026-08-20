@@ -182,9 +182,14 @@ func GetProxies() ([]map[string]any, int, int, int, error) {
 	chanBuf := concurrency
 	proxyChan := make(chan []map[string]any, chanBuf)
 
+	// 定义单一结构体保存节点与层级，合并去重 Map，提升内存局部性和寻址效率
+	type NodeEntry struct {
+		Data  map[string]any
+		Level int
+	}
+
 	// 预分配200K减少rehash；实际unique数通常远小于raw数
-	uniqueNodes := make(map[string]map[string]any, 100000)
-	keepLevels := make(map[string]int, 200000)
+	uniqueMap := make(map[string]NodeEntry, 100000)
 
 	var (
 		rawCount       int
@@ -205,7 +210,6 @@ func GetProxies() ([]map[string]any, int, int, int, error) {
 				}
 
 				rawCount++
-				gcPending++
 
 				if gcInterval > 0 {
 					gcPending++
@@ -231,10 +235,18 @@ func GetProxies() ([]map[string]any, int, int, int, error) {
 					level = KeepLevelHistory
 				}
 
-				key := utils.NodeKey(proxy)
-				if existLevel, exists := keepLevels[key]; !exists || level > existLevel {
-					uniqueNodes[key] = proxy
-					keepLevels[key] = level
+				// 直接读取生产者注入的 _node_key，省去 50% 极其消耗 CPU 的哈希运算
+				key, ok := proxy["_node_key"].(string)
+				if !ok {
+					continue
+				}
+
+				// 单次 Map 寻址即完成检查和覆盖
+				if existing, exists := uniqueMap[key]; !exists || level > existing.Level {
+					uniqueMap[key] = NodeEntry{
+						Data:  proxy,
+						Level: level,
+					}
 				}
 			}
 		}
@@ -261,18 +273,30 @@ func GetProxies() ([]map[string]any, int, int, int, error) {
 	close(proxyChan)
 	<-done
 
-	// 将 Map 转为 Slice，并统计最终的分类数量
-	finalProxies := make([]map[string]any, 0, len(uniqueNodes))
-	for key, node := range uniqueNodes {
-		switch keepLevels[key] {
+	// 将 Map 转为 Slice 的同时，注入临时优先排序字段
+	finalProxies := make([]map[string]any, 0, len(uniqueMap))
+	for _, entry := range uniqueMap {
+		switch entry.Level {
 		case KeepLevelSuccess:
 			finalSuccCount++
 		case KeepLevelHistory:
 			finalHistCount++
 		}
-		// 清理元数据
+		// 临时注入用于排序的值
+		entry.Data["_temp_keep_level"] = entry.Level
+		finalProxies = append(finalProxies, entry.Data)
+	}
+
+	// 按照：上次成功(2) > 历史节点(1) > 普通节点(0) 降序排列
+	sort.Slice(finalProxies, func(i, j int) bool {
+		levelI := finalProxies[i]["_temp_keep_level"].(int)
+		levelJ := finalProxies[j]["_temp_keep_level"].(int)
+		return levelI > levelJ
+	})
+
+	// 排序完成后再统一清理所有的元数据
+	for _, node := range finalProxies {
 		cleanMetadata(node)
-		finalProxies = append(finalProxies, node)
 	}
 
 	// 打印去重统计日志
@@ -284,8 +308,7 @@ func GetProxies() ([]map[string]any, int, int, int, error) {
 	saveStats(SubStats)
 
 	// 释放 Map 内存（虽然函数返回后也会释放）
-	uniqueNodes = nil
-	keepLevels = nil
+	uniqueMap = nil
 	// 归还内存
 	debug.FreeOSMemory()
 
@@ -522,6 +545,9 @@ func processSubscription(
 		}
 		seenInSub[key] = struct{}{}
 
+		// 将计算好的 key 存入节点传递给消费者，免去下游消费时的二次高负载计算
+		node["_node_key"] = key
+
 		node["sub_url"] = urlStr
 		node["sub_tag"] = tag
 		node["sub_was_succeed"] = wasSucced
@@ -543,7 +569,7 @@ func processSubscription(
 		}
 	}
 	data = nil //nolint:ineffassign
-	flush() // 发送剩余节点
+	flush()    // 发送剩余节点
 
 	// 将解析器内部已去重的数量补回 rawHits，使其代表真实候选数
 	parserDeduped := parseStats["LineDedup"] + parseStats["BatchDedup"]
@@ -634,6 +660,9 @@ func saveStats(subStats map[string]SubStat) {
 func cleanMetadata(p map[string]any) {
 	delete(p, "sub_was_succeed")
 	delete(p, "sub_from_history")
+	// 清理注入用来优化和排序的临时键值
+	delete(p, "_node_key")
+	delete(p, "_temp_keep_level")
 	utils.DeleteNodeKey(p)
 }
 

@@ -258,7 +258,7 @@ func Check() ([]Result, error) {
 	}
 
 	// 设置之前成功的节点顺序在前
-	headSize := subWasSuccedLength + historyLength
+	headSize := subWasSuccedLength
 	if len(proxies) > headSize {
 		// 假设有 15 个相似的ip
 		calcMinSpacing := max(config.GlobalConfig.Concurrent*5, len(proxies)/15)
