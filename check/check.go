@@ -50,6 +50,9 @@ var (
 	CheckEndTime      time.Time
 	CheckDuration     time.Duration
 	CheckTrafficTotal string
+
+	Fetching atomic.Bool // 拉取订阅阶段
+	Checking atomic.Bool // 检测阶段
 )
 
 // 存储测速和流媒体检测开关状态
@@ -237,11 +240,15 @@ func Check() ([]Result, error) {
 	speedON = config.GlobalConfig.SpeedTestURL != ""
 	mediaON = config.GlobalConfig.MediaCheck
 
+	// 标记订阅获取阶段开始
+	Fetching.Store(true)
 	CurrentStepName.Store("获取订阅")
 	// 获取订阅节点和之前成功的节点数量(已前置)
-	proxies, rawCount, subWasSuccedLength, historyLength, err := proxyutils.GetProxies(func(done, total int) {
+	proxies, rawCount, subWasSuccedLength, historyLength, err := proxyutils.GetProxies(func(stepName string, done, total, available int) {
+		CurrentStepName.Store(stepName)
 		Progress.Store(uint32(done))
 		ProxyCount.Store(uint32(total))
+		Available.Store(uint32(available))
 	})
 	if err != nil {
 		return nil, fmt.Errorf("获取节点失败: %w", err)
@@ -252,6 +259,10 @@ func Check() ([]Result, error) {
 	proxyutils.ClearCache()
 
 	debug.FreeOSMemory()
+
+	Available.Store(0)
+	Progress.Store(0)
+	ProxyCount.Store(0)
 
 	if subWasSuccedLength > 0 {
 		slog.Info("已加载上次检测可用节点", "数量", subWasSuccedLength)
@@ -288,6 +299,10 @@ func Check() ([]Result, error) {
 		slog.Info("没有需要检测的节点")
 		return nil, nil
 	}
+
+	// 标记订阅获取阶段结束
+	Fetching.Store(false)
+	Checking.Store(true)
 
 	checker := NewProxyChecker(len(proxies))
 
@@ -506,6 +521,9 @@ func (pc *ProxyChecker) run(proxies []map[string]any) ([]Result, error) {
 
 	// 在保存上传之前直接归还内存
 	debug.FreeOSMemory()
+
+	// 标记结束
+	Checking.Store(false)
 
 	return pc.results, nil
 }

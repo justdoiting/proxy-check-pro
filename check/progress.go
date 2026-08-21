@@ -57,6 +57,7 @@ func NewProgressTracker(total int) *ProgressTracker {
 
 	ProxyCount.Store(uint32(total))
 	Progress.Store(0)
+	Available.Store(0)
 
 	// 初始化进度权重
 	progressWeight = getCheckWeight(speedON, mediaON)
