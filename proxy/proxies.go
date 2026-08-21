@@ -135,7 +135,7 @@ func initMemory() {
 }
 
 // GetProxies 主入口：获取、解析、去重及统计代理节点
-func GetProxies() ([]map[string]any, int, int, int, error) {
+func GetProxies(progressCallback func(done, total int)) ([]map[string]any, int, int, int, error) {
 	// 每次进入先清空上次的连接池
 	ClearCache()
 
@@ -258,6 +258,11 @@ func GetProxies() ([]map[string]any, int, int, int, error) {
 	listenPort := strings.TrimPrefix(config.GlobalConfig.ListenPort, ":")
 	subStorePort := strings.TrimPrefix(config.GlobalConfig.SubStorePort, ":")
 
+	var fetchedCount atomic.Int32
+	if progressCallback != nil {
+		progressCallback(0, len(subUrls))
+	}
+
 	for _, subURL := range subUrls {
 		wg.Add(1)
 		sem <- struct{}{}
@@ -266,6 +271,9 @@ func GetProxies() ([]map[string]any, int, int, int, error) {
 			defer wg.Done()
 			defer func() { <-sem }()
 			processSubscription(u, t, succ, hist, proxyChan, batchSize)
+			if progressCallback != nil {
+				progressCallback(int(fetchedCount.Add(1)), len(subUrls))
+			}
 		}(subURL, tag, isSucced, isHistory)
 	}
 
