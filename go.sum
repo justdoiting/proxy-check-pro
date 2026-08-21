@@ -245,8 +245,8 @@ github.com/metacubex/smux v0.0.0-20260105030934-d0c8756d3141 h1:DK2l6m2Fc85H2Bhi
 github.com/metacubex/smux v0.0.0-20260105030934-d0c8756d3141/go.mod h1:/yI4OiGOSn0SURhZdJF3CbtPg3nwK700bG8TZLMBvAg=
 github.com/metacubex/ssh v0.1.0 h1:iGfr99qk/eMHzUnQ/0bTxXT8+8SWqLSHBWDHoAhngzw=
 github.com/metacubex/ssh v0.1.0/go.mod h1:NUtl0d+/f2cG9ECEpMM8iCVOpmggQlC13oLeDUONDlU=
-github.com/metacubex/tailscale v0.0.0-20260820073511-5da3d6574d17 h1:WSYhaeNoSmPohzFt67SfpzpD+vsaO6vPAnaBjIC4SL0=
-github.com/metacubex/tailscale v0.0.0-20260820073511-5da3d6574d17/go.mod h1:fMMYScJPYt8Ss3D4VhontA2uV2N9NPZbbXsPP6LgQeo=
+github.com/metacubex/tailscale v0.0.0-20260821002758-7e607643d76d h1:Nqqv/OL1XeHIi773YknT517pjzrDtz3L3jY4ESAsEG8=
+github.com/metacubex/tailscale v0.0.0-20260821002758-7e607643d76d/go.mod h1:fMMYScJPYt8Ss3D4VhontA2uV2N9NPZbbXsPP6LgQeo=
 github.com/metacubex/tailscale-wireguard-go v0.0.0-20260725073821-e61ab99cede2 h1:nKyLVJEU4jsLVx+rdqbDUbEKTX/Sdu161AeVoZC9tlY=
 github.com/metacubex/tailscale-wireguard-go v0.0.0-20260725073821-e61ab99cede2/go.mod h1:W00EeoPdd2jbV3+ZUa0m2b7FdKx5B1LFsXvEpy7cToQ=
 github.com/metacubex/tfo-go v0.0.0-20260623020846-376a77860b8c h1:+2C1UshSLzaogLY/IDz1XhOLxjhs3rkhVHB4eCN9Zto=
@@ -327,8 +327,8 @@ github.com/sina-ghaderi/rabbitio v0.0.0-20220730151941-9ce26f4f872e h1:ur8uMsPIF
 github.com/sina-ghaderi/rabbitio v0.0.0-20220730151941-9ce26f4f872e/go.mod h1:+e5fBW3bpPyo+3uLo513gIUblc03egGjMM0+5GKbzK8=
 github.com/sinspired/checkip v0.5.1 h1:Bw259sBaactAF3HOmTfgAKb8ilzVrmnGB3fV21Vf9tk=
 github.com/sinspired/checkip v0.5.1/go.mod h1:SvLx5K0kEV/s4BUp2EJ9LiaaMUgSJ54njAwQI84iOo8=
-github.com/sinspired/subs-check-pro-webui v0.0.0-20260820102500-980f075958d3 h1:/bx+mDWZjYBZbbcwn2VmHGgwf26/BJgevkDHeFUpSw4=
-github.com/sinspired/subs-check-pro-webui v0.0.0-20260820102500-980f075958d3/go.mod h1:rg8DBZnTSh5/5tHCwQJrMVX6tKqqI5m8BrTT+gCB92M=
+github.com/sinspired/subs-check-pro-webui v0.0.0-20260821060914-4660cfc03e7e h1:CRTNxZ9na5Abf2DHpZAYCgRv8fCEyNWIDGri4wB6aYI=
+github.com/sinspired/subs-check-pro-webui v0.0.0-20260821060914-4660cfc03e7e/go.mod h1:rg8DBZnTSh5/5tHCwQJrMVX6tKqqI5m8BrTT+gCB92M=
 github.com/sirupsen/logrus v1.10.1 h1:xi4336Zh11WpU14fXR6I67V3yaTPQYwRx2WEtHbRg4Q=
 github.com/sirupsen/logrus v1.10.1/go.mod h1:vsQHnG7xzNsxk3NrwboUiWPnIC3dmbjcGPykD7+tiHk=
 github.com/sohaha/zlsgo v1.7.21 h1:8FF+aHJUvA0MudSYGY+AUipy+UFgDbJQhSIhPE6f1Fs=
@@ -416,8 +416,8 @@ golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPh
 golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a/go.mod h1:P+XmwS30IXTQdn5tA2iutPOUgjI07+tq3H3K9MVA1s8=
 golang.org/x/crypto v0.55.0 h1:+KWHjbgOaAQ66dh/YlkZKHlz9ZUlq61AFirAR9ntP8M=
 golang.org/x/crypto v0.55.0/go.mod h1:uq0V9dE/fzQuJtbnL+2EhWOE63vo164FY8xqEnV9xis=
-golang.org/x/exp v0.0.0-20260820122028-d6e0b57b1a69 h1:ZWbzF1An5vqXvvbp91IMvPTgvtwx8Vm6NXIXv45/ZUo=
-golang.org/x/exp v0.0.0-20260820122028-d6e0b57b1a69/go.mod h1:Mkmymgv+uMpSQ/XxJ/7GpdrdYoqm3u72jEbpCLiJmNk=
+golang.org/x/exp v0.0.0-20260820142414-ca536658362e h1:01Ju2A/fZKkci4zqx0eZxw//DnRYOnBiGJG14hFBhO8=
+golang.org/x/exp v0.0.0-20260820142414-ca536658362e/go.mod h1:zeBbvyFKDaLwa7CH/zI8KXt7gTl14SF7sO08Pl5jBCM=
 golang.org/x/lint v0.0.0-20200302205851-738671d3881b/go.mod h1:3xt1FjdF8hUf6vQPIChWIBhFzV8gjjsPE/fR3IyQdNY=
 golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee/go.mod h1:QqPTAvyqsEbceGzBzNggFXnrqF1CaUcvgkdR5Ot7KZg=
 golang.org/x/mod v0.40.0 h1:hUv+3cXcdRHz08UmSiOob7sadHig73uo5bkXxQ/tvUs=
